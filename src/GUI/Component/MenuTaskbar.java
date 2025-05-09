@@ -50,8 +50,7 @@ public class MenuTaskbar extends JPanel {
         ImageIcon logoutIcon = new ImageIcon(getClass().getResource("/icon/logout.png"));
         ImageIcon loaispIcon = new ImageIcon(getClass().getResource("/icon/loaisp.png"));
 
-        // Các chức năng chung
-        addButton(menu, "Trang chủ", homeIcon, e -> swap(new TrangChuPanel()));
+
         
         addButton(menu, "Bán quạt", sellIcon, e -> {
             String maNV = null;
@@ -71,8 +70,7 @@ public class MenuTaskbar extends JPanel {
 
         addButton(menu, "Quản lý quạt", quatIcon, e -> swap(new QuatPanel()));
         addButton(menu, "Hóa đơn", billIcon, e -> swap(new HoaDonPanel()));
-        addButton(menu, "Phiếu nhập", importIcon, e -> swap(new PhieuNhapPanel(this.maNhanVien)));
-        addButton(menu, "Phiếu xuất", exportIcon, e -> swap(new PhieuXuatPanel()));
+            addButton(menu, "Phiếu nhập", importIcon, e -> swap(new PhieuNhapPanel(this.maNhanVien)));
         addButton(menu, "Loại sản phẩm", loaispIcon, e -> swap(new LoaiSanPhamPanel()));
 
         // Chức năng riêng cho quản lý

@@ -9,13 +9,25 @@ import java.sql.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import DTO.QuatDTO;
+import java.awt.Font;
+import java.awt.Color;
 import GUI.Dialog.SuaQuatDialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileOutputStream;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.apache.poi.ss.usermodel.Sheet;  
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 
 public class QuatPanel extends JPanel {
     private JTable table;
@@ -75,19 +87,42 @@ public class QuatPanel extends JPanel {
         leftWrapper.add(Box.createVerticalGlue());
         
 
-        // ---- RIGHT TOOL PANEL (FILTER + SEARCH + LÀM MỚI) ----
-        JPanel rightToolPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+       // ---- RIGHT TOOL PANEL (FILTER + SEARCH + LÀM MỚI) ----
+        JPanel rightToolPanel = new JPanel();
+        rightToolPanel.setLayout(new BoxLayout(rightToolPanel, BoxLayout.Y_AXIS));
         rightToolPanel.setOpaque(false);
+
+        // Panel trên chứa combobox, tìm kiếm và button làm mới
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        topPanel.setOpaque(false);
 
         JComboBox<String> cbbFilter = new JComboBox<>(new String[]{"Tất cả", "Mã Quạt", "Tên Quạt", "Thương Hiệu"});
         JLabel lblSearch = new JLabel("Tìm kiếm:");
         JTextField txtSearch = new JTextField(15);
         JButton btnLamMoi = new JButton("LÀM MỚI");
 
-        rightToolPanel.add(cbbFilter);
-        rightToolPanel.add(lblSearch);
-        rightToolPanel.add(txtSearch);
-        rightToolPanel.add(btnLamMoi);
+        topPanel.add(cbbFilter);
+        topPanel.add(lblSearch);
+        topPanel.add(txtSearch);
+        topPanel.add(btnLamMoi);
+
+        // Panel dưới chứa phần giá từ và đến (ngang hàng)
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        bottomPanel.setOpaque(false);
+
+        JLabel lblGiaFrom = new JLabel("Giá từ:");
+        JTextField txtGiaFrom = new JTextField(10);
+        JLabel lblGiaTo = new JLabel("Đến:");
+        JTextField txtGiaTo = new JTextField(10);
+
+        bottomPanel.add(lblGiaFrom);
+        bottomPanel.add(txtGiaFrom);
+        bottomPanel.add(lblGiaTo);
+        bottomPanel.add(txtGiaTo);
+
+        // Thêm cả hai panel vào rightToolPanel
+        rightToolPanel.add(topPanel);
+        rightToolPanel.add(bottomPanel);
 
         // Wrapper để căn giữa theo chiều dọc
         JPanel rightWrapper = new JPanel();
@@ -101,7 +136,6 @@ public class QuatPanel extends JPanel {
         toolbar.add(leftWrapper, BorderLayout.WEST);
         toolbar.add(rightWrapper, BorderLayout.EAST);
         toolbar.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 5, true));
-
         btnThem.addActionListener(e -> {
             ThemQuatDialog dialog = new ThemQuatDialog((Window) SwingUtilities.getWindowAncestor(this)); // Khởi tạo dialog
             dialog.setVisible(true);
@@ -158,6 +192,12 @@ public class QuatPanel extends JPanel {
             // Chỉ load lại nếu có thay đổi
             if (dialog.isUpdated()) {
                 loadDataFromDatabase();
+            }
+        });
+        btnExcel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                xuatExcel();
             }
         });
         
@@ -221,46 +261,42 @@ public class QuatPanel extends JPanel {
         
         btnLamMoi.addActionListener(e -> {
             txtSearch.setText("");
-            cbbFilter.setSelectedIndex(0); // Reset về "Tất cả"
-            loadDataFromDatabase(); // Hàm load toàn bộ dữ liệu lên bảng
+            cbbFilter.setSelectedIndex(0); 
+            loadDataFromDatabase(); 
         });
-       
-
-
-
         return toolbar;
     }
     
 
     private JScrollPane createTablePanel() {
-     tableModel = new DefaultTableModel(new Object[] {
-         "Mã Quạt", "Tên Quạt", "Giá","Số Lương Tồn", "Mã NSX", "Ngày Sản Xuất", "Chất liệu", "Thương Hiệu", "Mã Loại"
-     }, 0) {
-         @Override
-         public boolean isCellEditable(int row, int column) {
-             return false;
-         }
-     };
+         tableModel = new DefaultTableModel(new Object[] {
+             "Mã Quạt", "Tên Quạt", "Giá","SL Tồn", "Mã NSX", "Ngày SX", "Chất liệu", "Thương Hiệu", "Mã Loại"
+         }, 0) {
+             @Override
+             public boolean isCellEditable(int row, int column) {
+                 return false;
+             }
+         };
 
-     table = new JTable(tableModel);
-     setTableCellAlignment();
-     table.setFont(new Font("Arial", Font.PLAIN, 14)); 
-     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-     table.setRowHeight(30);
+         table = new JTable(tableModel);
+         setTableCellAlignment();
+         table.setFont(new Font("Arial", Font.PLAIN, 14)); 
+         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+         table.setRowHeight(30);
 
-     JTableHeader header = table.getTableHeader();
-     header.setFont(new Font("Arial", Font.BOLD, 14)); 
-     header.setPreferredSize(new Dimension(header.getPreferredSize().width, 50));
+         JTableHeader header = table.getTableHeader();
+         header.setFont(new Font("Arial", Font.BOLD, 14)); 
+         header.setPreferredSize(new Dimension(header.getPreferredSize().width, 50));
 
-     table.addComponentListener(new java.awt.event.ComponentAdapter() {
-         @Override
-         public void componentResized(java.awt.event.ComponentEvent evt) {
-             adjustTableColumnWidth();
-         }
-     });
+         table.addComponentListener(new java.awt.event.ComponentAdapter() {
+             @Override
+             public void componentResized(java.awt.event.ComponentEvent evt) {
+                 adjustTableColumnWidth();
+             }
+         });
 
-     return new JScrollPane(table);
- }
+         return new JScrollPane(table);
+    }
 
 
     private void setTableCellAlignment() {
@@ -275,16 +311,16 @@ public class QuatPanel extends JPanel {
 
     private void adjustTableColumnWidth() {
         int w = table.getWidth();
-        table.getColumnModel().getColumn(0).setPreferredWidth((int)(w * 0.06));
+        table.getColumnModel().getColumn(0).setPreferredWidth((int)(w * 0.07));
         table.getColumnModel().getColumn(1).setPreferredWidth((int)(w * 0.25));
-        table.getColumnModel().getColumn(2).setPreferredWidth((int)(w * 0.06));
+        table.getColumnModel().getColumn(2).setPreferredWidth((int)(w * 0.08));
 
-        table.getColumnModel().getColumn(3).setPreferredWidth((int)(w * 0.10));
+        table.getColumnModel().getColumn(3).setPreferredWidth((int)(w * 0.08));
         table.getColumnModel().getColumn(4).setPreferredWidth((int)(w * 0.10));
         table.getColumnModel().getColumn(5).setPreferredWidth((int)(w * 0.10));
         table.getColumnModel().getColumn(6).setPreferredWidth((int)(w * 0.13));
-        table.getColumnModel().getColumn(7).setPreferredWidth((int)(w * 0.12));
-        table.getColumnModel().getColumn(8).setPreferredWidth((int)(w * 0.10));
+        table.getColumnModel().getColumn(7).setPreferredWidth((int)(w * 0.13));
+        table.getColumnModel().getColumn(8).setPreferredWidth((int)(w * 0.08));
     }
 
     private void loadDataToTable(List<QuatDTO> list) {
@@ -326,4 +362,47 @@ public class QuatPanel extends JPanel {
             });
         }
     }
+    public void xuatExcel() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Lưu file Excel");
+        int userSelection = fileChooser.showSaveDialog(null);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            if (!fileToSave.getName().endsWith(".xlsx")) {
+                fileToSave = new File(fileToSave.getAbsolutePath() + ".xlsx");
+            }
+
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("DanhSach");
+
+                // Tạo dòng tiêu đề từ tableModel
+                Row header = sheet.createRow(0);
+                for (int i = 0; i < tableModel.getColumnCount(); i++) {
+                    header.createCell(i).setCellValue(tableModel.getColumnName(i));
+                }
+
+                // Ghi dữ liệu từ tableModel
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    Row row = sheet.createRow(i + 1);
+                    for (int j = 0; j < tableModel.getColumnCount(); j++) {
+                        Object value = tableModel.getValueAt(i, j);
+                        row.createCell(j).setCellValue(value != null ? value.toString() : "");
+                    }
+                }
+
+                // Ghi ra file
+                FileOutputStream out = new FileOutputStream(fileToSave);
+                workbook.write(out);
+                out.close();
+
+                JOptionPane.showMessageDialog(null, "Xuất Excel thành công!");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Lỗi khi xuất Excel: " + ex.getMessage());
+            }
+        }
+    }
+
+
 }

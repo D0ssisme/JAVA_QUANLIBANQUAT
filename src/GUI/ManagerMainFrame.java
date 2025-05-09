@@ -2,7 +2,8 @@ package GUI;
 
 import DTO.DBConnection;
 import GUI.Component.MenuTaskbar;
-import GUI.Panel.TrangChuPanel;
+import GUI.Panel.BanQuatPanel;
+
 
 
 import javax.swing.*;
@@ -81,7 +82,7 @@ public class ManagerMainFrame extends JFrame {
         add(mainContent, BorderLayout.CENTER);
 
         // Mặc định hiển thị Trang Chủ
-        setPanel(new TrangChuPanel());
+        setPanel(new BanQuatPanel());
     }
 
     /**

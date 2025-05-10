@@ -9,19 +9,20 @@ import DTO.PhieuNhapDTO;
 import java.util.List;
 import java.util.Map;
 import GUI.Dialog.ThemPhieuNhapDialog;
-import GUI.Dialog.ChiTietPhieuNhapDialog;
 import org.jdesktop.swingx.prompt.PromptSupport;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import com.toedter.calendar.JDateChooser;
 import java.util.Locale;
 import javax.swing.JOptionPane;
+import GUI.Dialog.ThemPhieuNhapDialog;
+import GUI.Dialog.ChiTietPhieuNhapDialog;
 
 
 
 public class PhieuNhapPanel extends JPanel {
     private String manv;
-    private JButton btnThem, btnChiTiet, btnHuyPhieu, btnXuatExcel, btnLamMoi,btnTimKiem;
+    private JButton btnThem, btnChiTiet, btnHuyPhieu, btnXuatExcel, btnLamMoi,btnTimKiem,btnTimKiem2;
     private JComboBox<String> cbbSearchType;
     private JTextField txtSearch;
 
@@ -30,7 +31,7 @@ public class PhieuNhapPanel extends JPanel {
 
     // Bộ lọc bên trái
     private JComboBox<String> cbbNhaCungCap, cbbNhanVien;
-    private JTextField txtTuNgay, txtDenNgay, txtSoTien; 
+    private JTextField txtTuNgay, txtDenNgay, txtTuSoTien,txtDenSotien; 
     // (Có thể dùng JDateChooser, v.v. tuỳ bạn)
 
     public PhieuNhapPanel(String manv) {
@@ -88,9 +89,11 @@ public class PhieuNhapPanel extends JPanel {
         PromptSupport.setPrompt("Nhập nội dung tìm kiếm...", txtSearch);
         PromptSupport.setForeground(Color.GRAY, txtSearch);
         btnLamMoi = new JButton("Làm mới");
+        btnTimKiem2=new JButton("Tìm Kiếm");
 
         rightToolPanel.add(cbbSearchType);
         rightToolPanel.add(txtSearch);
+        rightToolPanel.add(btnTimKiem2);
         rightToolPanel.add(btnLamMoi);
 
         // Ghép 2 panel vào topPanel
@@ -105,7 +108,7 @@ public class PhieuNhapPanel extends JPanel {
         
         // ==================== Panel lọc bên trái ====================
         JPanel filterPanel = new JPanel();
-        filterPanel.setLayout(new GridLayout(6, 1, 0, 0)); 
+        filterPanel.setLayout(new GridLayout(7, 1, 0, 0)); 
         // Hoặc BoxLayout, tuỳ ý
         filterPanel.setPreferredSize(new Dimension(200, 0)); 
         // Để chiều rộng cố định, chiều cao flexy
@@ -147,10 +150,18 @@ public class PhieuNhapPanel extends JPanel {
 
         //Số tiền
         JPanel row5 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        row5.add(new JLabel("Số tiền (VNĐ):"));
-        txtSoTien = new JTextField(10);
-        row5.add(txtSoTien);
+        row5.add(new JLabel("Từ Số tiền (VNĐ):"));
+        txtTuSoTien = new JTextField(10);
+        row5.add(txtTuSoTien);
         filterPanel.add(row5);
+        
+        JPanel row7= new JPanel(new FlowLayout(FlowLayout.LEFT));
+        row7.add(new JLabel("Đến Số tiền (VNĐ):"));
+        txtDenSotien = new JTextField(10);
+        row7.add(txtDenSotien);
+        filterPanel.add(row7);
+        
+        
         
         JPanel row6 = new JPanel(new FlowLayout(FlowLayout.LEFT));
         btnTimKiem = new JButton("Tìm Kiếm");  // Tạo một nút mới với tên "Click Me"
@@ -162,7 +173,7 @@ public class PhieuNhapPanel extends JPanel {
         add(filterPanel, BorderLayout.WEST);
 
         // ==================== Bảng hiển thị trung tâm ====================
-        String[] columns = {"STT", "Mã phiếu", "Tên nhà cung cấp", "Nhân viên nhập", "Thời gian", "Tổng tiền"};
+        String[] columns = {"STT", "Mã phiếu", "Tên nhà cung cấp", "Nhân viên nhập", "Thời gian nhập", "Tổng tiền"};
         tableModel = new DefaultTableModel(columns, 0);
         table = new JTable(tableModel);
 
@@ -178,6 +189,9 @@ public class PhieuNhapPanel extends JPanel {
         ThemPhieuNhapDialog dialog = new ThemPhieuNhapDialog((Frame) SwingUtilities.getWindowAncestor(this), true,this.manv);
         dialog.setLocationRelativeTo(this); // Căn giữa với frame cha
         dialog.setVisible(true);
+        tableModel.setRowCount(0);
+        txtSearch.setText("");
+        loadData();
     });
 
         btnChiTiet.addActionListener(e -> {   
@@ -196,12 +210,15 @@ public class PhieuNhapPanel extends JPanel {
 
             
         });
+        
         btnHuyPhieu.addActionListener(e -> {
             
         });
+        
         btnXuatExcel.addActionListener(e -> {
             JOptionPane.showMessageDialog(this, "Xuất Excel!");
         });
+        
         btnLamMoi.addActionListener(e -> {
             // Xoá bảng rồi thêm lại
         tableModel.setRowCount(0);

@@ -183,8 +183,19 @@ public class LoginFrame extends JFrame implements KeyListener {
     }
     @Override public void keyTyped(KeyEvent e)  { }
     @Override public void keyReleased(KeyEvent e) { }
-
     public static void main(String[] args) {
+        try {
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Không thể đặt LookAndFeel Nimbus: " + e);
+        }
+
         SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
     }
+
 }

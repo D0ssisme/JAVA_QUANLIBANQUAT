@@ -1,20 +1,38 @@
-package GUI.Panel;
+package GUI.Panel.ThongKe;
 
+import BUS.ThongKeBUS;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ThongKePanel extends JPanel {
+
+   JTabbedPane tabbedPane;
+    JPanel loaiquat, quat, khachhang;
+
+    Color BackgroundColor = new Color(240, 247, 250);
+    ThongKeBUS thongkeBUS = new ThongKeBUS();
+
     public ThongKePanel() {
-        initUI();
+        initComponent();
     }
 
-    private void initUI() {
-        setLayout(new BorderLayout());
-        // Ví dụ: thêm một tiêu đề
-        JLabel title = new JLabel("THỐNG KÊ", SwingConstants.CENTER);
-        title.setFont(title.getFont().deriveFont(Font.BOLD, 24f));
-        add(title, BorderLayout.NORTH);
+    public void initComponent() {
+        this.setLayout(new GridLayout(1, 1));
+        this.setBackground(BackgroundColor);
 
-        // TODO: Thêm các thành phần thống kê khác tại đây
+        loaiquat = new ThongKeLoaiQuat(thongkeBUS);
+         quat = new ThongKeQuat(thongkeBUS);
+        khachhang = new ThongKeKhachHang(thongkeBUS);
+
+        tabbedPane = new JTabbedPane();
+        tabbedPane.setOpaque(false);
+        tabbedPane.addTab("Loại Quạt", loaiquat);
+        tabbedPane.addTab("  Quạt  ", quat);
+        tabbedPane.addTab("Khách hàng", khachhang);
+
+        this.add(tabbedPane);
     }
 }

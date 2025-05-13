@@ -28,40 +28,12 @@ public class KhuyenMaiPanel extends JPanel implements ItemListener, KeyListener 
     }
 
     public KhuyenMaiPanel() {
-        initComponent();
-        loadDataFromDatabase();
-    }
-
-    private void initComponent() {
         setLayout(new BorderLayout(10, 10));
+        setBorder(new javax.swing.border.EmptyBorder(10, 10, 10, 10));
         setBackground(Color.WHITE);
 
-        // Toolbar
-        JPanel toolbar = new JPanel(new BorderLayout());
-
-        JPanel leftTool = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        btnThem = new JButton("THÊM");
-        btnXoa = new JButton("XÓA");
-        btnSua = new JButton("SỬA");
-        btnExcel = new JButton("XUẤT EXCEL");
-        leftTool.add(btnThem);
-        leftTool.add(btnXoa);
-        leftTool.add(btnSua);
-        leftTool.add(btnExcel);
-
-        JPanel rightTool = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
-        cbbPhanTram = new JComboBox<>(new String[]{"Tất cả", "Dưới 10%", "Từ 10% - 20%", "Trên 20%"});
-        cbbPhanTram.addItemListener(this);
-        txtSearch = new JTextField(15);
-        setupSearchPlaceholder();
-        txtSearch.addKeyListener(this);
-        btnLamMoi = new JButton("LÀM MỚI");
-        rightTool.add(cbbPhanTram);
-        rightTool.add(txtSearch);
-        rightTool.add(btnLamMoi);
-
-        toolbar.add(leftTool, BorderLayout.WEST);
-        toolbar.add(rightTool, BorderLayout.EAST);
+        // === Toolbar ===
+        JPanel toolbar = createButtonPanel();
         add(toolbar, BorderLayout.NORTH);
 
         // Table
@@ -72,11 +44,93 @@ public class KhuyenMaiPanel extends JPanel implements ItemListener, KeyListener 
         table = new JTable(tableModel);
         add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // Events
+        // Load data
+        loadDataFromDatabase();
+    }
+
+    private JPanel createButtonPanel() {
+        // Tạo một panel chứa toàn bộ toolbar
+        JPanel toolbar = new JPanel();
+        toolbar.setLayout(new GridBagLayout()); // Sử dụng GridBagLayout để căn chỉnh chính xác
+        toolbar.setBackground(Color.WHITE);
+        toolbar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.weightx = 0.0;
+        gbc.weighty = 1.0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 0, 5); // Khoảng cách giữa các nút
+
+        // Tạo các buttons với icons 
+        ImageIcon iconThem = new ImageIcon(getClass().getResource("/icon/them.png"));
+        btnThem = new JButton("THÊM", iconThem);
+        btnThem.setHorizontalTextPosition(SwingConstants.CENTER);
+        btnThem.setVerticalTextPosition(SwingConstants.BOTTOM);
+        toolbar.add(btnThem, gbc);
+
+        gbc.gridx = 1;
+        ImageIcon iconXoa = new ImageIcon(getClass().getResource("/icon/xoa.png"));
+        btnXoa = new JButton("XÓA", iconXoa);
+        btnXoa.setHorizontalTextPosition(SwingConstants.CENTER);
+        btnXoa.setVerticalTextPosition(SwingConstants.BOTTOM);
+        toolbar.add(btnXoa, gbc);
+
+        gbc.gridx = 2;
+        ImageIcon iconSua = new ImageIcon(getClass().getResource("/icon/sua.png"));
+        btnSua = new JButton("SỬA", iconSua);
+        btnSua.setHorizontalTextPosition(SwingConstants.CENTER);
+        btnSua.setVerticalTextPosition(SwingConstants.BOTTOM);
+        toolbar.add(btnSua, gbc);
+
+        gbc.gridx = 3;
+        ImageIcon iconExcel = new ImageIcon(getClass().getResource("/icon/xuatexcel.png"));
+        btnExcel = new JButton("XUẤT EXCEL", iconExcel);
+        btnExcel.setHorizontalTextPosition(SwingConstants.CENTER);
+        btnExcel.setVerticalTextPosition(SwingConstants.BOTTOM);
+        toolbar.add(btnExcel, gbc);
+
+        // Phần tìm kiếm bên phải
+        gbc.gridx = 4;
+        gbc.weightx = 1.0; // Phần này sẽ chiếm khoảng trống còn lại
+        toolbar.add(Box.createHorizontalGlue(), gbc); // Tạo khoảng trống giữa các nút và phần tìm kiếm
+
+        // Panel chứa các thành phần tìm kiếm
+        JPanel searchPanel = new JPanel();
+        searchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0)); // Căn phải, khoảng cách 5px
+        searchPanel.setOpaque(false);
+
+        // Thêm các thành phần vào panel tìm kiếm
+        JLabel lblFilter = new JLabel("Lọc:");
+        cbbPhanTram = new JComboBox<>(new String[]{"Tất cả", "Dưới 10%", "Từ 10% - 20%", "Trên 20%"});
+        cbbPhanTram.addItemListener(this);
+        
+        txtSearch = new JTextField();
+        txtSearch.setPreferredSize(new Dimension(180, 25));
+        setupSearchPlaceholder();
+        txtSearch.addKeyListener(this);
+        
+        btnLamMoi = new JButton("LÀM MỚI");
+
+        searchPanel.add(lblFilter);
+        searchPanel.add(cbbPhanTram);
+        searchPanel.add(txtSearch);
+        searchPanel.add(btnLamMoi);
+
+        gbc.gridx = 5;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.weightx = 0.0;
+        toolbar.add(searchPanel, gbc);
+
+        // === Sự kiện nút ===
         btnThem.addActionListener(e -> themKhuyenMai());
         btnXoa.addActionListener(e -> xoaKhuyenMai());
         btnSua.addActionListener(e -> suaKhuyenMai());
         btnLamMoi.addActionListener(e -> refreshData());
+
+        return toolbar;
     }
 
     private void setupSearchPlaceholder() {

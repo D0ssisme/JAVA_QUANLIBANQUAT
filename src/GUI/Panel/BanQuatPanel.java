@@ -10,6 +10,7 @@ import BUS.KhachHangBUS;
 import DAO.ChiTietHoaDonDAO;
 import DAO.HoaDonDAO;
 import DAO.QuatDAO;
+import BUS.QLBH_BUS;
 import DTO.ChiTietHoaDonDTO;
 import DTO.HoaDonDTO;
 import java.util.Date;
@@ -305,87 +306,6 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
         btnXuatPDF.setEnabled(tableModel.getRowCount() > 0);
     }
 
-//    private void processPayment() {
-//        // Kiểm tra xem có sản phẩm trong giỏ hàng không
-//        if (tableModel.getRowCount() == 0) {
-//            JOptionPane.showMessageDialog(this, "Chưa có sản phẩm nào để thanh toán!", "Thông báo", JOptionPane.WARNING_MESSAGE);
-//            return;
-//        }
-//
-//        // Tính tổng tiền trước khi áp dụng khuyến mãi
-//        int sum = 0, qty = 0;
-//        for (int i = 0; i < tableModel.getRowCount(); i++) {
-//            int price = (int) tableModel.getValueAt(i, 2);
-//            int count = (int) tableModel.getValueAt(i, 4);
-//            sum += price * count;
-//            qty += count;
-//        }
-//
-//        // Kiểm tra khuyến mãi nếu có
-//        boolean khuyenMaiHopLe = true;
-//        String thongBaoKM = "";
-//        int totalAfterDiscount = sum;
-//
-//        if (chkApDungKM.isSelected() && cbbKhuyenMai.getSelectedItem() != null) {
-//            String ma = ((String) cbbKhuyenMai.getSelectedItem()).split(" – ")[0];
-//            PromotionResult r = checkPromotion(ma, sum, qty);
-//
-//            if (!r.isValid) {
-//                khuyenMaiHopLe = false;
-//                thongBaoKM = "Khuyến mãi không hợp lệ: " + r.msg;
-//            } else {
-//                totalAfterDiscount = sum - (sum * r.discount / 100);
-//            }
-//        }
-//
-//        // Nếu khuyến mãi không hợp lệ, hiển thị thông báo và không cho thanh toán
-//        if (!khuyenMaiHopLe) {
-//            JOptionPane.showMessageDialog(this, thongBaoKM, "Lỗi khuyến mãi", JOptionPane.ERROR_MESSAGE);
-//            return;
-//        }
-//
-//        // Hiển thị xác nhận thanh toán
-//        int choice = JOptionPane.showConfirmDialog(this,
-//                "Xác nhận thanh toán: " + totalAfterDiscount + " VND?",
-//                "Thanh toán", JOptionPane.OK_CANCEL_OPTION);
-//
-//        if (choice == JOptionPane.OK_OPTION) {
-//            boolean capNhatThanhCong = true;
-//
-//            // Nếu là khách hàng thành viên, cập nhật tổng tiền đã mua
-//            if (rdoThanhVien.isSelected() && cbbKhachHang.getSelectedItem() != null) {
-//                String selectedItem = (String) cbbKhachHang.getSelectedItem();
-//                String sdtKH = selectedItem.split(" – ")[0];
-//
-//                // Truy vấn thông tin khách hàng từ cơ sở dữ liệu
-//                KhachHangDTO kh = new KhachHangBUS().findBySdt(sdtKH);
-//                if (kh == null) {
-//                    JOptionPane.showMessageDialog(this, "Khách hàng không tồn tại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-//                    return;
-//                }
-//
-//                // Cập nhật tổng tiền cho khách hàng
-//                int tongTienMoi = kh.getTongTienDaMua() + totalAfterDiscount;
-//                kh.setTongTienDaMua(tongTienMoi);
-//
-//                // Cập nhật vào cơ sở dữ liệu
-//                KhachHangDAO dao = new KhachHangDAO();
-//                capNhatThanhCong = dao.update(kh);
-//            }
-//
-//            // Hiển thị thông báo phù hợp
-//            if (capNhatThanhCong) {
-//                JOptionPane.showMessageDialog(this, "Thanh toán thành công!");
-//                tableModel.setRowCount(0);
-//                updateTotal();
-//            } else {
-//                JOptionPane.showMessageDialog(this, "Thanh toán thành công nhưng cập nhật thông tin khách hàng thất bại!",
-//                        "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-//                tableModel.setRowCount(0);
-//                updateTotal();
-//            }
-//        }
-//    }
     private void processPayment() {
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             System.out.println("Row " + i + ": Mã Quạt=" + tableModel.getValueAt(i, 0) + ", Giá=" + tableModel.getValueAt(i, 2) + ", Số lượng=" + tableModel.getValueAt(i, 4));
@@ -478,8 +398,8 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
                                 + ", ThanhTien=" + thanhTien);
 
                         // Create warranty code
-                        String maBaoHanh = "BH" + maHD + maQuat;
-
+                        // Get warranty code from database based on fan code
+                        String maBaoHanh = QLBH_BUS.getMaBaoHanhByMaQuat(maQuat);
                         ChiTietHoaDonDTO ctHD = new ChiTietHoaDonDTO(maHD, maQuat, soLuong, donGia, thanhTien, maBaoHanh);
                         int resultCTHD = ChiTietHoaDonDAO.insert(ctHD);
 
@@ -622,26 +542,22 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
     }
 
     private String generateNewInvoiceCode() {
-        // Lấy ngày hiện tại
-        LocalDate currentDate = LocalDate.now();
-        String dateStr = currentDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String prefix = "HD" + dateStr;
+        // Prefix cho mã hóa đơn
+        String prefix = "HD";
 
-        // Tìm mã hóa đơn lớn nhất trong ngày
+        // Tìm mã hóa đơn lớn nhất
         int maxNumber = 0;
-
         try (Connection conn = DBConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(
                 "SELECT MAX(MaHoaDon) FROM hoadon WHERE MaHoaDon LIKE ?")) {
-
             pst.setString(1, prefix + "%");
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next() && rs.getString(1) != null) {
                     String maxCode = rs.getString(1);
-                    // Extract the numeric part
+                    // Trích xuất phần số
                     try {
                         maxNumber = Integer.parseInt(maxCode.substring(prefix.length()));
                     } catch (NumberFormatException e) {
-                        // Default to 0 if parsing fails
+                        // Mặc định là 0 nếu có lỗi
                     }
                 }
             }
@@ -649,8 +565,8 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
             e.printStackTrace();
         }
 
-        // Tăng số thứ tự lên 1 và định dạng với 3 chữ số
-        return prefix + String.format("%03d", maxNumber + 1);
+        // Tăng số thứ tự lên 1 và định dạng với 2 chữ số
+        return prefix + String.format("%02d", maxNumber + 1);
     }
 
     private static class SpinnerEditor extends AbstractCellEditor implements TableCellEditor {

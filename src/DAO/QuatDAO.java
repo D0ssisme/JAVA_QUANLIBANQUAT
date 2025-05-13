@@ -178,4 +178,31 @@ public class QuatDAO {
         }
         return false;
     }
+    public List<QuatDTO> findByMaLoai(String maLoai) throws SQLException {
+        List<QuatDTO> list = new ArrayList<>();
+        String sql = "SELECT * FROM quat WHERE MaLoaiSP = ?";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, maLoai);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new QuatDTO(
+                        rs.getString("MaQuat"),
+                        rs.getString("TenQuat"),
+                        rs.getInt("Gia"),
+                        rs.getInt("SoLuongTon"),
+                        rs.getString("MaNSX"),
+                        rs.getString("NgaySanXuat"),
+                        rs.getString("ChatLieu"),
+                        rs.getString("ThuongHieu"),
+                        rs.getString("MaLoaiSP")
+                    ));
+                }
+            }
+        }
+        return list;
+    }
+
+
+
 }

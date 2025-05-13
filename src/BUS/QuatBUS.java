@@ -38,19 +38,15 @@ public class QuatBUS {
     }
 
     // Thêm quạt
-    public boolean them(String maQuat, String tenQuat, int gia, int soLuongTon, String maNSX, String ngaySanXuat, String chatLieu, String thuongHieu, String maLoaiSP) {
-        try {
-            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-            LocalDate localDate = LocalDate.parse(ngaySanXuat, inputFormatter);
-            String formattedDate = localDate.toString();  // yyyy-MM-dd
-
-            dao.insert(new QuatDTO(maQuat, tenQuat, gia,soLuongTon, maNSX, formattedDate, chatLieu, thuongHieu, maLoaiSP ));
-            return true;
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Lỗi khi lưu quạt: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
+ public boolean them(String maQuat, String tenQuat, int gia, int soLuongTon, String maNSX, java.sql.Date ngaySanXuat, String chatLieu, String thuongHieu, String maLoaiSP) {
+    try {
+        dao.insert(new QuatDTO(maQuat, tenQuat, gia, soLuongTon, maNSX, ngaySanXuat.toString(), chatLieu, thuongHieu, maLoaiSP));
+        return true;
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Lỗi khi lưu quạt: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        return false;
     }
+}
 
     // Xóa quạt
     public boolean xoa(String maQuat) {
@@ -63,7 +59,6 @@ public class QuatBUS {
         }
     }
 
-    // Sửa thông tin quạt
     public boolean sua(String maQuat, String tenQuat, int gia, int soLuongTon, String maNSX, String ngaySanXuat, String chatLieu, String thuongHieu, String maLoaiSP) {
         try {
             dao.update(new QuatDTO(maQuat, tenQuat, gia,soLuongTon, maNSX, ngaySanXuat, chatLieu, thuongHieu, maLoaiSP));
@@ -74,7 +69,6 @@ public class QuatBUS {
         }
     }
 
-    // Tìm kiếm quạt theo mã quạt
     public QuatDTO timTheoMaQuat(String maQuat) {
         try {
             return dao.findByMaQuat(maQuat);
@@ -107,4 +101,12 @@ public class QuatBUS {
     {
         return dao.updateSoLuongQuat(maquat, soluongquat);
     }
+    
+    public List<QuatDTO> layTheoMaLoai(String maLoai) throws SQLException {
+        return new QuatDAO().findByMaLoai(maLoai);
+    }
+    public boolean daTonTaiMaQuat(String maQuat) throws SQLException {
+        return dao.findByMaQuat(maQuat) != null;
+    }
+
 }

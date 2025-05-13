@@ -1,5 +1,6 @@
 package GUI.Component;
 
+import GUI.Panel.ThongKe.ThongKePanel;
 import GUI.LoginFrame;
 import GUI.ManagerMainFrame;
 import GUI.EmployeeMainFrame;
@@ -8,6 +9,9 @@ import GUI.Panel.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MenuTaskbar extends JPanel {
 
@@ -68,9 +72,15 @@ public class MenuTaskbar extends JPanel {
             }
         });
 
-        addButton(menu, "Quản lý quạt", quatIcon, e -> swap(new QuatPanel()));
+        addButton(menu, "Quản lý quạt", quatIcon, e -> {
+            try {
+                swap(new QuatPanel());
+            } catch (SQLException ex) {
+                Logger.getLogger(MenuTaskbar.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
         addButton(menu, "Hóa đơn", billIcon, e -> swap(new HoaDonPanel()));
-            addButton(menu, "Phiếu nhập", importIcon, e -> swap(new PhieuNhapPanel(this.maNhanVien)));
+        addButton(menu, "Phiếu nhập", importIcon, e -> swap(new PhieuNhapPanel(this.maNhanVien)));
         addButton(menu, "Loại sản phẩm", loaispIcon, e -> swap(new LoaiSanPhamPanel()));
 
         // Chức năng riêng cho quản lý

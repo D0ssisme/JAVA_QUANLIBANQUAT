@@ -1,19 +1,18 @@
 package GUI.Dialog;
 
-import DTO.LoaiSanPhamDTO;
 import BUS.LoaiSanPhamBUS;
+import DTO.LoaiSanPhamDTO;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class SuaLoaiSanPhamDialog extends JDialog {
-    private JTextField txtMaLoaiSP, txtTenLoai, txtTrangThai, txtMoTa;
-    private LoaiSanPhamDTO loaiSanPhamCu;
+    private JTextField txtMaLoai, txtTenLoai, txtMoTa;
+    private JComboBox<String> cboTrangThai;
     private boolean isUpdated = false;
 
-    public boolean isUpdated() {
-        return isUpdated;
-    }
+    private final LoaiSanPhamDTO loaiSanPhamCu;
+    private final LoaiSanPhamBUS loaiSanPhamBUS = new LoaiSanPhamBUS();
 
     public SuaLoaiSanPhamDialog(Window owner, LoaiSanPhamDTO loaiSanPham) {
         super(owner, "Sửa Loại Sản Phẩm", ModalityType.APPLICATION_MODAL);
@@ -22,80 +21,105 @@ public class SuaLoaiSanPhamDialog extends JDialog {
         loadDataToFields();
     }
 
+    public boolean isUpdated() {
+        return isUpdated;
+    }
+
     private void initComponent() {
-        setSize(400, 250);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout(10, 10));
+        this.setSize(450, 350);
+        this.setLocationRelativeTo(null);
+        this.setLayout(new BorderLayout(10, 10));
 
-        JPanel pnlForm = new JPanel(new GridLayout(4, 2, 5, 5));
-        pnlForm.add(new JLabel("Mã loại sản phẩm:"));
-        txtMaLoaiSP = new JTextField();
-        pnlForm.add(txtMaLoaiSP);
+        JLabel lblTitle = new JLabel("SỬA LOẠI SẢN PHẨM", SwingConstants.CENTER);
+        lblTitle.setOpaque(true);
+        lblTitle.setBackground(new Color(255, 193, 7));
+        lblTitle.setForeground(Color.BLACK);
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
+        lblTitle.setPreferredSize(new Dimension(this.getWidth(), 50));
+        this.add(lblTitle, BorderLayout.NORTH);
 
-        pnlForm.add(new JLabel("Tên loại:"));
+        Font labelFont = new Font("Segoe UI", Font.PLAIN, 14);
+        Font textFont = new Font("Segoe UI", Font.PLAIN, 14);
+        Dimension textFieldSize = new Dimension(200, 30);
+
+        JPanel pnlForm = new JPanel();
+        pnlForm.setLayout(new BoxLayout(pnlForm, BoxLayout.Y_AXIS));
+        pnlForm.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
+
+        txtMaLoai = new JTextField();
+        txtMaLoai.setEditable(false);
+        pnlForm.add(createInputRow("Mã loại:", txtMaLoai, labelFont, textFont, textFieldSize));
+
         txtTenLoai = new JTextField();
-        pnlForm.add(txtTenLoai);
+        pnlForm.add(createInputRow("Tên loại:", txtTenLoai, labelFont, textFont, textFieldSize));
 
-        pnlForm.add(new JLabel("Trạng thái:"));
-        txtTrangThai = new JTextField();
-        pnlForm.add(txtTrangThai);
+        cboTrangThai = new JComboBox<>(new String[]{"Hoạt động", "Ngừng kinh doanh"});
+        pnlForm.add(createComboBoxRow("Trạng thái:", cboTrangThai, labelFont));
 
-        pnlForm.add(new JLabel("Mô tả:"));
         txtMoTa = new JTextField();
-        pnlForm.add(txtMoTa);
+        pnlForm.add(createInputRow("Mô tả:", txtMoTa, labelFont, textFont, textFieldSize));
 
-        add(pnlForm, BorderLayout.CENTER);
+        this.add(pnlForm, BorderLayout.CENTER);
 
         JPanel pnlButton = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnLuu = new JButton("Lưu");
         JButton btnHuy = new JButton("Hủy");
         pnlButton.add(btnLuu);
         pnlButton.add(btnHuy);
+        this.add(pnlButton, BorderLayout.SOUTH);
 
-        add(pnlButton, BorderLayout.SOUTH);
-
-        // Nút Lưu
         btnLuu.addActionListener(e -> {
             if (saveChanges()) {
-                JOptionPane.showMessageDialog(this, "Loại sản phẩm đã được sửa.");
+                JOptionPane.showMessageDialog(this, "Loại sản phẩm đã được cập nhật.");
+                isUpdated = true;
                 dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Lỗi khi sửa loại sản phẩm!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        // Nút Hủy
         btnHuy.addActionListener(e -> dispose());
     }
 
-    private void loadDataToFields() {
-        txtMaLoaiSP.setText(loaiSanPhamCu.getMaLoaiSanPham());
-        txtTenLoai.setText(loaiSanPhamCu.getTenLoai());
-        txtTrangThai.setText(loaiSanPhamCu.getTrangThai());
-        txtMoTa.setText(loaiSanPhamCu.getMoTa());
+    private JPanel createInputRow(String labelText, JTextField textField, Font labelFont, Font textFont, Dimension textFieldSize) {
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel label = new JLabel(labelText);
+        label.setFont(labelFont);
+        label.setPreferredSize(new Dimension(140, 30));
+        textField.setFont(textFont);
+        textField.setPreferredSize(textFieldSize);
+        row.add(label);
+        row.add(textField);
+        return row;
+    }
 
-        // Không cho sửa mã loại sản phẩm
-        txtMaLoaiSP.setEditable(false);
+    private JPanel createComboBoxRow(String labelText, JComboBox<?> comboBox, Font labelFont) {
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel label = new JLabel(labelText);
+        label.setFont(labelFont);
+        label.setPreferredSize(new Dimension(140, 30));
+        comboBox.setPreferredSize(new Dimension(200, 30));
+        row.add(label);
+        row.add(comboBox);
+        return row;
+    }
+
+    private void loadDataToFields() {
+        txtMaLoai.setText(loaiSanPhamCu.getMaLoaiSanPham());
+        txtTenLoai.setText(loaiSanPhamCu.getTenLoai());
+        cboTrangThai.setSelectedItem(loaiSanPhamCu.getTrangThai());
+        txtMoTa.setText(loaiSanPhamCu.getMoTa());
     }
 
     private boolean saveChanges() {
-        try {
-            String maLoai = txtMaLoaiSP.getText();
-            String tenLoai = txtTenLoai.getText();
-            String trangThai = txtTrangThai.getText();
-            String moTa = txtMoTa.getText();
+        String maLoai = txtMaLoai.getText().trim();
+        String tenLoai = txtTenLoai.getText().trim();
+        String trangThai = (String) cboTrangThai.getSelectedItem();
+        String moTa = txtMoTa.getText().trim();
 
-            LoaiSanPhamBUS loaiSanPhamBLL = new LoaiSanPhamBUS();
-            boolean result = loaiSanPhamBLL.sua(maLoai, tenLoai, trangThai, moTa);
-
-            if (result) {
-                isUpdated = true;
-            }
-
-            return result;
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi xử lý dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        if (tenLoai.isEmpty() || moTa.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin.");
             return false;
         }
+
+        return loaiSanPhamBUS.sua(maLoai, tenLoai, trangThai, moTa);
     }
 }

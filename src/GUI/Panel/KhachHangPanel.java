@@ -120,7 +120,7 @@ public class KhachHangPanel extends JPanel {
 
         gbc.gridx = 4;
         ImageIcon iconToggle = new ImageIcon(getClass().getResource("/icon/Toggle.png"));
-        JButton btnToggle = new JButton("Chuyển TT", iconToggle);
+        JButton btnToggle = new JButton("Change status", iconToggle);
         btnToggle.setHorizontalTextPosition(SwingConstants.CENTER);
         btnToggle.setVerticalTextPosition(SwingConstants.BOTTOM);
         toolbar.add(btnToggle, gbc);
@@ -208,10 +208,10 @@ public class KhachHangPanel extends JPanel {
 
             // gọi DAO để cập nhật
             if (khachHangDAO.updateStatus(maKH, newStatus)) {
-                JOptionPane.showMessageDialog(this, "Chuyển trạng thái thành công!");
+                JOptionPane.showMessageDialog(this, "Thay đổi trạng thái thành công!");
                 loadDataFromDB();
             } else {
-                JOptionPane.showMessageDialog(this, "Chuyển trạng thái thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Thay đổi trạng thái thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         });
 

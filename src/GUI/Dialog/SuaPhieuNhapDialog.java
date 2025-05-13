@@ -111,7 +111,6 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
         jLabel14 = new javax.swing.JLabel();
         btn_addsanpham = new javax.swing.JButton();
         btn_suasoluong = new javax.swing.JButton();
-        btn_xoa = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -241,35 +240,12 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
         });
         jPanel5.add(btn_suasoluong);
 
-        btn_xoa.setText("XÓA");
-        btn_xoa.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_xoaActionPerformed(evt);
-            }
-        });
-        jPanel5.add(btn_xoa);
-
         jPanel3.add(jPanel5, java.awt.BorderLayout.CENTER);
 
         getContentPane().add(jPanel3, java.awt.BorderLayout.CENTER);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btn_xoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_xoaActionPerformed
-        // TODO add your handling code here:
-            int selectedRow = tablePhieuNhap.getSelectedRow();  // "table" là tên JTable của bạn
-
-    // Kiểm tra nếu có dòng được chọn
-    if (selectedRow != -1) {
-        // Xóa dòng được chọn khỏi DefaultTableModel
-        modelPhieuNhap.removeRow(selectedRow);
-    } else {
-        // Hiển thị thông báo nếu không có dòng nào được chọn
-        JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng để xóa.");
-    }
-        
-    }//GEN-LAST:event_btn_xoaActionPerformed
 
     private void btn_suasoluongActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_suasoluongActionPerformed
         // TODO add your handling code here:
@@ -571,7 +547,6 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
     private javax.swing.JButton btn_addsanpham;
     private javax.swing.JButton btn_luu;
     private javax.swing.JButton btn_suasoluong;
-    private javax.swing.JButton btn_xoa;
     private javax.swing.JComboBox<String> combobox_nhacungcap;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;

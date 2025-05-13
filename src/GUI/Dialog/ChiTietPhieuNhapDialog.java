@@ -19,9 +19,12 @@ import javax.swing.*;
 import DTO.ChiTietPhieuNhapDTO;
 import BUS.ChiTietPhieuNhapBUS;
 import java.util.List;
+import BUS.NhanVienBUS;
+import BUS.NhaCungCapBUS;
+import BUS.QuatBUS;
 
 // iText classes
-import com.itextpdf.text.Document;
+
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
@@ -29,9 +32,7 @@ import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.Phrase;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -45,6 +46,10 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+
 
 
 
@@ -69,6 +74,8 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
         this.maPhieuNhap=maPhieuNhap;
          hienThiBangPhieuNhap();
         hienThiThongTinPhieuNhap();
+        pack();                      // Tự động căn kích thước theo nội dung
+        setLocationRelativeTo(null);
     }
 
     /**
@@ -145,6 +152,11 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
         btn_cancel.setBackground(new java.awt.Color(255, 102, 102));
         btn_cancel.setText("HỦY");
         btn_cancel.setPreferredSize(new java.awt.Dimension(90, 30));
+        btn_cancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_cancelActionPerformed(evt);
+            }
+        });
         jPanel4.add(btn_cancel);
 
         jPanel2.add(jPanel4, java.awt.BorderLayout.PAGE_END);
@@ -212,9 +224,24 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
     private void btn_inpdfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_inpdfActionPerformed
         // TODO add your handling code here:
        
-      JFileChooser fileChooser = new JFileChooser();
+    JFileChooser fileChooser = new JFileChooser();
     fileChooser.setDialogTitle("Chọn nơi lưu file PDF");
     fileChooser.setSelectedFile(new File("phieu_nhap.pdf"));
+    
+    NhanVienBUS nvbus=new NhanVienBUS();
+    NhaCungCapBUS nccbus=new NhaCungCapBUS();
+    
+    String mapn=text_maphieunhap.getText();
+    String manv=text_nhanviennhap.getText();
+    String mancc=text_nhacungcap.getText();
+    String thoigiantao=text_thoigiantao.getText();
+    String tongtien=text_tongtien.getText();
+    
+    String tennvnhap=nvbus.getNameNVByMaNV(manv);
+    String tenncc=nccbus.layTenNhaCungCapTheoMa(mancc);
+    
+    
+    
 
     int userSelection = fileChooser.showSaveDialog(this);
     if (userSelection == JFileChooser.APPROVE_OPTION) {
@@ -225,11 +252,17 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
             String fontPath = "src/font/DejaVuSans.ttf";
             BaseFont baseFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
             Font font = new Font(baseFont, 12);
+             Font titletable = new Font(baseFont, 12, Font.BOLD);
+
 
             Document document = new Document(PageSize.A4);
             PdfWriter.getInstance(document, new FileOutputStream(fileToSave));
             document.open();
-            Paragraph timePrint = new Paragraph("Thời gian in phiếu: 07/10/2023 09:24", font);
+            
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            String currentTime = LocalDateTime.now().format(formatter);
+
+            Paragraph timePrint = new Paragraph("Thời gian in phiếu: " + currentTime, font);
             timePrint.setAlignment(Element.ALIGN_RIGHT);     // Căn phải
             timePrint.setSpacingAfter(10f);                  // Khoảng cách phía dưới (nếu cần)
             document.add(timePrint);
@@ -241,44 +274,40 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(20);
             document.add(title);
-
-            // Thông tin chung
-            document.add(new Paragraph("Mã phiếu: PN-15", font));
-            document.add(new Paragraph("Nhà cung cấp: Công ty Oppo Việt Nam", font));
             
-            document.add(new Paragraph("Thời gian nhập: 15/04/2023 00:59", font));
-            document.add(new Paragraph("Người thực hiện: Trần Nhật Sinh - Mã nhân viên: 1", font));
+            
+            
+            
+            // Thông tin chung
+            document.add(new Paragraph("Mã phiếu:"+mapn , font));
+            document.add(new Paragraph("Nhà cung cấp:"+tenncc, font));
+            
+            document.add(new Paragraph("Thời gian nhập:"+thoigiantao, font));
+            document.add(new Paragraph("Người thực hiện:"+tennvnhap+" Mã Nhân Viên:"+manv, font));
             document.add(new Paragraph("\n")); // Xuống một dòng
 
 
-            // Tạo bảng cho sản phẩm
-            PdfPTable table = new PdfPTable(5); // 5 cột: Tên sản phẩm, Phiên bản, Giá, Số lượng, Tổng tiền
+            PdfPTable table = new PdfPTable(5); // 5 cột
             table.setWidthPercentage(100);
 
-            // Thiết lập các tiêu đề cột
-            table.addCell(new PdfPCell(new Phrase("Tên sản phẩm", font)));
-            table.addCell(new PdfPCell(new Phrase("Phiên bản", font)));
-            table.addCell(new PdfPCell(new Phrase("Giá", font)));
-            table.addCell(new PdfPCell(new Phrase("Số lượng", font)));
-            table.addCell(new PdfPCell(new Phrase("Tổng tiền", font)));
+            // Thêm header
+            String[] headers = {"Mã Quạt", "Tên Quạt", "Số Lượng", "Đơn giá", "Thành Tiền"};
+            for (String header : headers) {
+                table.addCell(new PdfPCell(new Phrase(header, titletable)));
+            }
 
-            // Thêm dữ liệu vào bảng
-            table.addCell(new PdfPCell(new Phrase("OPPO Reno6 Pro 5G", font)));
-            table.addCell(new PdfPCell(new Phrase("256GB - 8GB - Xanh", font)));
-            table.addCell(new PdfPCell(new Phrase("12.000.000đ", font)));
-            table.addCell(new PdfPCell(new Phrase("13", font)));
-            table.addCell(new PdfPCell(new Phrase("156.000.000đ", font)));
-
-            table.addCell(new PdfPCell(new Phrase("OPPO A95", font)));
-            table.addCell(new PdfPCell(new Phrase("128GB - 8GB - Bạc", font)));
-            table.addCell(new PdfPCell(new Phrase("4.500.000đ", font)));
-            table.addCell(new PdfPCell(new Phrase("7", font)));
-            table.addCell(new PdfPCell(new Phrase("31.500.000đ", font)));
+            // Duyệt từng dòng trong model để thêm vào bảng PDF
+            for (int row = 0; row < model.getRowCount(); row++) {
+                for (int col = 0; col < model.getColumnCount(); col++) {
+                    Object value = model.getValueAt(row, col);
+                    table.addCell(new PdfPCell(new Phrase(value.toString(), font)));
+                }
+            }
 
             document.add(table);
 
             // Tổng tiền
-            document.add(new Paragraph("Tổng thành tiền: 187.500.000đ", font));
+            document.add(new Paragraph("Tổng thành tiền: "+tongtien+"đ", font));
             document.add(new Paragraph("\n")); // Xuống một dòng
 
             // Chữ ký người lập phiếu, nhân viên nhận, nhà cung cấp
@@ -327,6 +356,11 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
         
         
     }//GEN-LAST:event_btn_inpdfActionPerformed
+
+    private void btn_cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cancelActionPerformed
+        // TODO add your handling code here:
+        dispose();
+    }//GEN-LAST:event_btn_cancelActionPerformed
 
     /**
      * @param args the command line arguments
@@ -391,20 +425,26 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
     }
 
 public void hienThiBangPhieuNhap() {
-    String[] columnNames = {"Mã quạt", "Số lượng", "Đơn giá", "Thành tiền"};
-
+    QuatBUS quatbus=new QuatBUS();
+   
+    String[] columnNames = {"Mã quạt","Tên Quạt", "Số lượng", "Đơn giá", "Thành tiền"};
+    int tongtien=0;
     // Lấy dữ liệu từ BLL
     List<ChiTietPhieuNhapDTO> dsCTPN = ChiTietPhieuNhapBUS.getChiTietPhieuNhapByMaPN(this.maPhieuNhap);
 
     // Chuyển sang Object[][]
-    Object[][] data = new Object[dsCTPN.size()][4];
+    Object[][] data = new Object[dsCTPN.size()][5];
     for (int i = 0; i < dsCTPN.size(); i++) {
         ChiTietPhieuNhapDTO ct = dsCTPN.get(i);
         data[i][0] = ct.getMaQuat();
-        data[i][1] = ct.getSoLuong();
-        data[i][2] = ct.getDonGia();
-        data[i][3] = ct.getThanhTien();
+        data[i][1]=quatbus.timTheoMaQuat(ct.getMaQuat()).getTenQuat();
+        data[i][2] = ct.getSoLuong();
+        data[i][3] = ct.getDonGia();
+        data[i][4] = ct.getThanhTien();
+        tongtien+=ct.getThanhTien();
     }
+    text_tongtien.setText(String.valueOf(tongtien));
+
 
     // Tạo model và bảng
     model = new DefaultTableModel(data, columnNames);

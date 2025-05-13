@@ -9,7 +9,11 @@ import javax.swing.JOptionPane;
 
 public class NhaCungCapBUS {
     private final NhaCungCapDAO dao = new NhaCungCapDAO();
-
+    
+    public String layTenNhaCungCapTheoMa(String maNCC)
+    {
+        return dao.layTenNhaCungCapTheoMa(maNCC);
+    }
      public String layMaNCCTheoTen(String tenNCC) {
         return NhaCungCapDAO.layMaNhaCungCapTheoTen(tenNCC);
     }

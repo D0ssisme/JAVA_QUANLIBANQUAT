@@ -17,12 +17,29 @@ import java.util.Locale;
 import javax.swing.JOptionPane;
 import GUI.Dialog.ThemPhieuNhapDialog;
 import GUI.Dialog.ChiTietPhieuNhapDialog;
+import GUI.Dialog.SuaPhieuNhapDialog;
+import BUS.NhaCungCapBUS;
+import DTO.NhaCungCapDTO;
+import DTO.NhanVienDTO;
+import BUS.NhanVienBUS;
+import java.io.File;
+import java.io.FileOutputStream;
+
+// Apache POI
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.awt.Desktop;
+import java.util.ArrayList;
+
 
 
 
 public class PhieuNhapPanel extends JPanel {
     private String manv;
-    private JButton btnThem, btnChiTiet, btnHuyPhieu, btnXuatExcel, btnLamMoi,btnTimKiem,btnTimKiem2;
+    private JButton btnThem, btnChiTiet, btnSuaPhieu, btnXuatExcel, btnLamMoi,btnTimKiem,btnTimKiem2;
     private JComboBox<String> cbbSearchType;
     private JTextField txtSearch;
 
@@ -67,10 +84,10 @@ public class PhieuNhapPanel extends JPanel {
         btnChiTiet.setHorizontalTextPosition(SwingConstants.CENTER);
         btnChiTiet.setVerticalTextPosition(SwingConstants.BOTTOM);
 
-        btnHuyPhieu = new JButton("HỦY PHIẾU");
-        btnHuyPhieu.setIcon(new ImageIcon(getClass().getResource("/icon/xoa.png")));
-        btnHuyPhieu.setHorizontalTextPosition(SwingConstants.CENTER);
-        btnHuyPhieu.setVerticalTextPosition(SwingConstants.BOTTOM);
+        btnSuaPhieu = new JButton("SỬA PHIẾU");
+        btnSuaPhieu.setIcon(new ImageIcon(getClass().getResource("/icon/xoa.png")));
+        btnSuaPhieu.setHorizontalTextPosition(SwingConstants.CENTER);
+        btnSuaPhieu.setVerticalTextPosition(SwingConstants.BOTTOM);
         
         btnXuatExcel = new JButton("XUẤT EXCEL");
         btnXuatExcel.setIcon(new ImageIcon(getClass().getResource("/icon/xuatexcel.png")));
@@ -79,7 +96,7 @@ public class PhieuNhapPanel extends JPanel {
         
         leftToolPanel.add(btnThem);
         leftToolPanel.add(btnChiTiet);
-        leftToolPanel.add(btnHuyPhieu);
+        leftToolPanel.add(btnSuaPhieu);
         leftToolPanel.add(btnXuatExcel);
 
         //(B) Panel chứa combo + ô tìm kiếm + nút làm mới (FlowLayout phải)
@@ -117,14 +134,43 @@ public class PhieuNhapPanel extends JPanel {
         // chọn nhà cung cấp
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
         row1.add(new JLabel("Nhà cung cấp:"));
-        cbbNhaCungCap = new JComboBox<>(new String[]{"Tất cả", "NCC01", "NCC02", "NCC03"});
+        NhaCungCapBUS nccbus=new NhaCungCapBUS();
+        // 1. Lấy danh sách NCC từ cơ sở dữ liệu
+        List<NhaCungCapDTO> danhSachNCC = new ArrayList<>();
+        danhSachNCC=nccbus.layTatCa();
+
+        // 2. Tạo model cho ComboBox và thêm "Tất cả"
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        model.addElement("Tất cả");
+
+        // 3. Thêm mã NCC vào model
+        for (NhaCungCapDTO ncc : danhSachNCC) {
+            model.addElement(ncc.getMaNCC());
+        }
+
+        // 4. Gán model cho ComboBox
+        cbbNhaCungCap = new JComboBox<>(model);
+
+        
+        
+        
         row1.add(cbbNhaCungCap);
         filterPanel.add(row1);
 
         // chọn nhân viên
         JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
         row2.add(new JLabel("Nhân viên:"));
-        cbbNhanVien = new JComboBox<>(new String[]{"Tất cả", "NV01", "NV02", "NV03"});
+        NhanVienBUS nvbus=new NhanVienBUS();
+        List<NhanVienDTO> listnv=new ArrayList<>();
+        listnv=nvbus.layTatCa();
+        DefaultComboBoxModel<String> modelcomboboxnv=new DefaultComboBoxModel<>();
+        modelcomboboxnv.addElement("Tất cả");
+        for(NhanVienDTO nvdto : listnv)
+        {
+            modelcomboboxnv.addElement(nvdto.getMaNV());
+        }
+        
+        cbbNhanVien = new JComboBox<>(modelcomboboxnv);
         row2.add(cbbNhanVien);
         filterPanel.add(row2);
         
@@ -211,21 +257,66 @@ public class PhieuNhapPanel extends JPanel {
             
         });
         
-        btnHuyPhieu.addActionListener(e -> {
+        btnSuaPhieu.addActionListener(e -> {
+               int row = table.getSelectedRow();
+    // Nếu không có dòng nào được chọn
+        if (row == -1) {
+        JOptionPane.showMessageDialog(this, "Vui lòng chọn phiếu nhập để xem chi tiết.");
+        return;
+        }
+        String maPhieuNhap = table.getValueAt(row, 1).toString();
+        SuaPhieuNhapDialog dialog=new SuaPhieuNhapDialog(new JFrame(), true, maPhieuNhap);
+        dialog.setVisible(true);
             
         });
         
-        btnXuatExcel.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Xuất Excel!");
-        });
-        
-        btnLamMoi.addActionListener(e -> {
-            // Xoá bảng rồi thêm lại
-        tableModel.setRowCount(0);
-        txtSearch.setText("");
-        loadData();
-        });
-        
+       
+      btnXuatExcel.addActionListener(e -> {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+        int userSelection = fileChooser.showSaveDialog(null);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            if (!fileToSave.getAbsolutePath().endsWith(".xlsx")) {
+                fileToSave = new File(fileToSave.getAbsolutePath() + ".xlsx");
+            }
+
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("Danh sách phiếu nhập");
+
+                // Tạo header
+                Row headerRow = sheet.createRow(0);
+                for (int i = 0; i < tableModel.getColumnCount(); i++) {
+                    Cell cell = headerRow.createCell(i);
+                    cell.setCellValue(tableModel.getColumnName(i));
+                }
+
+                // Dữ liệu
+                for (int row = 0; row < tableModel.getRowCount(); row++) {
+                    Row excelRow = sheet.createRow(row + 1);
+                    for (int col = 0; col < tableModel.getColumnCount(); col++) {
+                        Cell cell = excelRow.createCell(col);
+                        Object value = tableModel.getValueAt(row, col);
+                        cell.setCellValue(value != null ? value.toString() : "");
+                    }
+                }
+
+                // Ghi file
+                FileOutputStream fileOut = new FileOutputStream(fileToSave);
+                workbook.write(fileOut);
+                fileOut.close();
+
+                // Mở file sau khi xuất
+                Desktop.getDesktop().open(fileToSave);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Lỗi khi xuất Excel: " + ex.getMessage());
+            }
+        }
+    });
+
+
         
         
         
@@ -258,6 +349,7 @@ public class PhieuNhapPanel extends JPanel {
     
     }
 
+    
 private void loadData() {
     // Xóa dữ liệu cũ
     tableModel.setRowCount(0);

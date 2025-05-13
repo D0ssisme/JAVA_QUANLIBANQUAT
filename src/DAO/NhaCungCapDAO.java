@@ -72,7 +72,31 @@ public class NhaCungCapDAO {
         }
         return null;
     }
-
+    
+    public String layTenNhaCungCapTheoMa(String maNCC)
+    {
+        String tenncc="";
+        String sql="SELECT TenNCC From nha_cung_cap WHERE MaNCC=?";
+        try(Connection conn=DBConnection.getConnection();
+        PreparedStatement ps =conn.prepareStatement(sql))
+        {
+            ps.setString(1,maNCC);
+            ResultSet rs=ps.executeQuery();
+            while(rs.next())
+            {
+                tenncc=rs.getString("TenNCC");
+            }
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return tenncc;
+       
+            
+        }
+        
+    
     public static String layMaNhaCungCapTheoTen(String tenNCC) {
     String maNCC = null;
     String sql = "SELECT MaNCC FROM nha_cung_cap WHERE TenNCC = ?";

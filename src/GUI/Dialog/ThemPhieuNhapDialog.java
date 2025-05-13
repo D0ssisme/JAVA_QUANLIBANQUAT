@@ -53,7 +53,8 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
         createPhieuNhapTable();
         loadComboBoxNhaCungCap();
         addsanphamtoform();
-        locktext();
+        pack();                      // Tự động căn kích thước theo nội dung
+        setLocationRelativeTo(null);
         
     }
 
@@ -144,7 +145,7 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
         panel_tablephieunhap.setLayout(panel_tablephieunhapLayout);
         panel_tablephieunhapLayout.setHorizontalGroup(
             panel_tablephieunhapLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 927, Short.MAX_VALUE)
+            .addGap(0, 843, Short.MAX_VALUE)
         );
         panel_tablephieunhapLayout.setVerticalGroup(
             panel_tablephieunhapLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -168,7 +169,7 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
         );
         panel_tablesanphamLayout.setVerticalGroup(
             panel_tablesanphamLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 465, Short.MAX_VALUE)
+            .addGap(0, 363, Short.MAX_VALUE)
         );
 
         panel.add(panel_tablesanpham, java.awt.BorderLayout.CENTER);

@@ -121,8 +121,6 @@ public class QuatPanel extends JPanel {
         toolbar.add(leftWrapper, BorderLayout.WEST);
         toolbar.add(rightWrapper, BorderLayout.EAST);
 
-
-        // Sự kiện các nút
         btnThem.addActionListener(e -> {
             ThemQuatDialog dialog = new ThemQuatDialog((Window) SwingUtilities.getWindowAncestor(this)); 
             dialog.setVisible(true);
@@ -144,7 +142,7 @@ public class QuatPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Xóa quạt thành công.", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                 loadDataFromDatabase();
             } else {
-                JOptionPane.showMessageDialog(this, "Xóa quạt thất bại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Xóa quạt thất bại. Vẫn còn liên kết trong SQL", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -224,8 +222,7 @@ private void filterData(JTextField txtSearch, JComboBox<String> cbbFilter, JComb
     
     int giaTu = 0;
     int giaDen = Integer.MAX_VALUE;
-    
-    // Kiểm tra giá từ
+
     if (!giaTuStr.isEmpty()) {
         try {
             giaTu = Integer.parseInt(giaTuStr);
@@ -240,8 +237,7 @@ private void filterData(JTextField txtSearch, JComboBox<String> cbbFilter, JComb
             return;
         }
     }
-    
-    // Kiểm tra giá đến
+
     if (!giaDenStr.isEmpty()) {
         try {
             giaDen = Integer.parseInt(giaDenStr);
@@ -256,8 +252,7 @@ private void filterData(JTextField txtSearch, JComboBox<String> cbbFilter, JComb
             return;
         }
     }
-    
-    // Kiểm tra giá từ <= giá đến khi cả hai đều được nhập
+
     if (!giaTuStr.isEmpty() && !giaDenStr.isEmpty() && giaTu > giaDen) {
         JOptionPane.showMessageDialog(null, "Giá từ phải nhỏ hơn hoặc bằng giá đến!");
         txtGiaTu.requestFocus();

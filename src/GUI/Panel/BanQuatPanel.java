@@ -48,7 +48,7 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
     private JComboBox<String> cbbKhachHang, cbbKhuyenMai;
     private JComboBox<QuatComboItem> cbbSanPham;
     private JCheckBox chkApDungKM;
-    private JButton btnThemSP, btnThanhToan, btnXuatPDF, btnHuy;
+    private JButton btnThemSP, btnThanhToan, btnHuy;
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField txtTong;
@@ -226,8 +226,6 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
             updateTotal();
         } else if (src == btnThanhToan) {
             processPayment();
-        } else if (src == btnXuatPDF) {
-            JOptionPane.showMessageDialog(this, "Chức năng đang phát triển.");
         } else if (src == btnHuy) {
             tableModel.setRowCount(0);
             updateTotal();
@@ -393,7 +391,6 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
         }
         txtTong.setText(String.valueOf(sum));
         btnThanhToan.setEnabled(tableModel.getRowCount() > 0);
-        btnXuatPDF.setEnabled(tableModel.getRowCount() > 0);
     }
 
     private void processPayment() {

@@ -13,7 +13,7 @@ public class QuatDTO {
 
     public QuatDTO() { }
 
-    public QuatDTO(String maQuat, String tenQuat, int gia, int soLuongTon, String maNSX, // ✅ thêm soLuongTon vào constructor
+    public QuatDTO(String maQuat, String tenQuat, int gia, int soLuongTon, String maNSX, 
                 String ngaySanXuat, String chatLieu, String thuongHieu, String maLoaiSP) {
         this.maQuat = maQuat;
         this.tenQuat = tenQuat;

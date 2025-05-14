@@ -8,20 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class QuatDAO {
-//    publoc List<QuatDTo> laytatca()throws SQLException{
-//        List<QuatDTO> list = new ArrayList<>();
-//        String sql = "SELECT  FROM quat";
-//        try(Connection c = DBConnection.getConnection();
-//            PreparedStatement ps = c.prepareStatement(sql);
-//            RessultSet rs = ps.excuteQuery()){
-//            while(rs.next()){
-//                list.add(new QuatDTO(
-//                
-//                ));
-//            }
-//            
-//        }
-//    }
+
     public List<QuatDTO> getAll() throws SQLException {
         List<QuatDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM quat";
@@ -163,12 +150,12 @@ public class QuatDAO {
         return list;
     }
     public boolean updateSoLuongQuat(String maQuat, int soLuongNhap) {
-        String sql = "UPDATE quat SET SoLuongTon = SoLuongTon + ? WHERE MaQuat = ?"; // Cộng số lượng quạt nhập vào
+        String sql = "UPDATE quat SET SoLuongTon = SoLuongTon + ? WHERE MaQuat = ?"; 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, soLuongNhap); // Cộng số lượng quạt nhập vào
-            ps.setString(2, maQuat);   // Mã quạt cần cập nhật
+            ps.setInt(1, soLuongNhap); 
+            ps.setString(2, maQuat);   
 
             int rowsUpdated = ps.executeUpdate();
             return rowsUpdated > 0;

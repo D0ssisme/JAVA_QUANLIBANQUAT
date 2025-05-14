@@ -59,6 +59,7 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
         createSanPhamTable();
         createPhieuNhapTable();
         addsanphamtoform();
+        lock_text();
         pack();                  
         setLocationRelativeTo(null);
         
@@ -386,7 +387,18 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
             }
         });
     }
-    
+    private void lock_text(){
+        text_maquat.setEditable(false);
+        text_chatlieu.setEditable(false);
+        text_gianhap.setEditable(false);
+        text_maphieunhap.setEditable(false);
+        text_ngaysanxuat.setEditable(false);
+        text_nhanviennhap.setEditable(false);
+        text_nhasanxuat.setEditable(false);
+        text_tenquat.setEditable(false);
+        
+        
+    }
     
     private void createPhieuNhapTable() {
         String[] columnNames = {"Mã", "Tên", "Giá", "Số lượng", "Ngày sản xuất", "Chất liệu","Nhả Sản Xuất"};

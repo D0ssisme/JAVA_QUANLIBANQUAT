@@ -51,6 +51,7 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
         this.manv=manv;
         initComponents();
         createSanPhamTable();
+        locktext();
         createPhieuNhapTable();
         loadComboBoxNhaCungCap();
         addsanphamtoform();

@@ -10,7 +10,6 @@ import java.util.List;
 public class LoaiSanPhamBUS {
     private final LoaiSanPhamDAO dao = new LoaiSanPhamDAO();
 
-    // Lấy tất cả loại sản phẩm
     public List<LoaiSanPhamDTO> layTatCa() {
         try {
             return dao.getAll();
@@ -19,8 +18,6 @@ public class LoaiSanPhamBUS {
             return List.of();
         }
     }
-
-    // Thêm loại sản phẩm
     public boolean them(String maLoai, String tenLoai, String trangThai, String moTa) {
         try {
             dao.insert(new LoaiSanPhamDTO(maLoai, tenLoai, trangThai, moTa));
@@ -30,8 +27,6 @@ public class LoaiSanPhamBUS {
             return false;
         }
     }
-
-    // Xóa loại sản phẩm theo mã
     public boolean xoa(String maLoai) {
         try {
             dao.delete(maLoai);
@@ -41,8 +36,6 @@ public class LoaiSanPhamBUS {
             return false;
         }
     }
-
-    // Cập nhật loại sản phẩm
     public boolean sua(String maLoai, String tenLoai, String trangThai, String moTa) {
         try {
             dao.update(new LoaiSanPhamDTO(maLoai, tenLoai, trangThai, moTa));
@@ -63,7 +56,6 @@ public class LoaiSanPhamBUS {
         }
     }
 
-    // Tìm gần đúng theo tên
     public List<LoaiSanPhamDTO> timTheoTen(String keyword) {
         try {
             return dao.findByTenLoai(keyword);
@@ -71,5 +63,8 @@ public class LoaiSanPhamBUS {
             e.printStackTrace();
             return List.of();
         }
+    }
+    public boolean daTonTaiMaLoai(String maLoai) throws SQLException {
+        return dao.findByMaLoai(maLoai) != null;
     }
 }

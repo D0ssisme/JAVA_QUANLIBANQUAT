@@ -32,4 +32,11 @@ public class KhachHangBUS {
 
         return kh;
     }
+       public boolean isValidMaKhachHang(String maKh) {
+        if (maKh == null) {
+            return false;
+        }
+        // Regex: KH tiếp theo ít nhất 1 chữ số, rồi có thể thêm chữ số nữa
+        return maKh.matches("^KH\\d+$");
+    }
 }

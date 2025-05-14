@@ -11,6 +11,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 public class ThongKeKhachHangTheoThang extends JPanel {
@@ -80,21 +81,25 @@ public class ThongKeKhachHangTheoThang extends JPanel {
             int nam = Integer.parseInt(txtNam.getText().trim());
 
             List<ThongKeKhachHangTheoThangDTO> ds = thongkeBUS.thongKeKHTheoThang(thang, nam);
+            ds.sort(Comparator.comparingDouble(ThongKeKhachHangTheoThangDTO::getTongTien).reversed());
 
             barChart.clear();
-            for (ThongKeKhachHangTheoThangDTO dto : ds) {
+            barChart.setChartTitle("Top khách hàng có tổng tiền mua hàng cao nhất trong tháng " + thang + "/" + nam);
+
+            for (ThongKeKhachHangTheoThangDTO dto : ds.stream().limit(5).toList()) {
                 barChart.addData(new ModelChart(dto.getTenKH(), new double[]{dto.getTongTien()}));
             }
 
             barChart.revalidate();
             barChart.repaint();
+
             model.setRowCount(0);
             for (ThongKeKhachHangTheoThangDTO dto : ds) {
                 model.addRow(new Object[]{
-                        dto.getMaKH(),
-                        dto.getTenKH(),
-                        dto.getSoLanMua(),
-                        Formater.FormatVND(dto.getTongTien())
+                    dto.getMaKH(),
+                    dto.getTenKH(),
+                    dto.getSoLanMua(),
+                    Formater.FormatVND(dto.getTongTien())
                 });
             }
 
@@ -102,4 +107,5 @@ public class ThongKeKhachHangTheoThang extends JPanel {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập đúng định dạng tháng và năm!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 }

@@ -13,7 +13,7 @@ import java.awt.Dialog.ModalityType;
 public class ThongTinCaNhanPanel extends JPanel {
     private JTextField txtMaNV, txtHoTen, txtChucVu, txtSDT, txtDiaChi;
     private JTextField txtTenDangNhap, txtMatKhau;
-    private JButton btnDoiMatKhau, btnHuy;
+    private JButton btnDoiMatKhau;
     private final String maNhanVien;
     private final NhanVienBUS nvBUS = new NhanVienBUS();
     private final TaiKhoanBUS tkBUS = new TaiKhoanBUS();
@@ -157,13 +157,10 @@ public class ThongTinCaNhanPanel extends JPanel {
         // Button Panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         btnDoiMatKhau = new JButton("Đổi mật khẩu");
-        btnHuy = new JButton("Làm mới");
         
         btnDoiMatKhau.addActionListener(e -> showPasswordChangeDialog());
-        btnHuy.addActionListener(e -> resetFields());
         
         buttonPanel.add(btnDoiMatKhau);
-        buttonPanel.add(btnHuy);
         
         add(buttonPanel, BorderLayout.SOUTH);
     }
@@ -206,10 +203,6 @@ public class ThongTinCaNhanPanel extends JPanel {
             txtTenDangNhap.setText(tk.getUsername());
             txtMatKhau.setText(tk.getPassword());
         }
-    }
-    
-    private void resetFields() {
-        loadData();
     }
     
     private void showPasswordChangeDialog() {

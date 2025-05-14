@@ -110,7 +110,9 @@ public class ThongKeKhachHangTheoNam extends JPanel {
 
         // ==== HIỂN THỊ TOÀN BỘ DỮ LIỆU TRONG BẢNG ====
         model.setRowCount(0);
+        ds.sort(Comparator.comparingDouble(ThongKeKhachHangTheoNamDTO::getTongTien).reversed());
         for (ThongKeKhachHangTheoNamDTO dto : ds) {
+
             model.addRow(new Object[]{
                     dto.getMaKH(),
                     dto.getTenKH(),

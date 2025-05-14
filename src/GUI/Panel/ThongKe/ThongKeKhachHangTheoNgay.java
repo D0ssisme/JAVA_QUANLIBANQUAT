@@ -99,6 +99,7 @@ public class ThongKeKhachHangTheoNgay extends JPanel {
                     .toList();
 
             barChart.clear();
+            barChart.setChartTitle("Top 5 khách hàng có tổng tiền mua hàng cao nhất từ năm " + ngayBatDauStr + " đến " + ngayKetThucStr);
             for (ThongKeKhachHangTheoNgayDTO dto : top5) {
                 barChart.addData(new ModelChart(dto.getTenKH(), new double[]{dto.getTongTien()}));
             }
@@ -106,6 +107,7 @@ public class ThongKeKhachHangTheoNgay extends JPanel {
             barChart.repaint();
 
             // ==== HIỂN THỊ TOÀN BỘ DỮ LIỆU TRONG BẢNG ====
+            ds.sort(Comparator.comparingDouble(ThongKeKhachHangTheoNgayDTO::getTongTien).reversed());
             model.setRowCount(0);
             for (ThongKeKhachHangTheoNgayDTO dto : ds) {
                 model.addRow(new Object[]{

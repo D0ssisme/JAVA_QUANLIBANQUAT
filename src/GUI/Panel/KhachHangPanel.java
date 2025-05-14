@@ -20,11 +20,13 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 public class KhachHangPanel extends JPanel {
 
-    private JButton btnThem, btnXoa, btnSua, btnExcel, btnLamMoi;
+    private JButton btnThem, btnXoa, btnSua, btnLamMoi;
     private JTextField txtSearch;
     private JTable table;
     private DefaultTableModel tableModel;
-    private TableRowSorter<DefaultTableModel> sorter;
+    private JTextField txtPriceFrom, txtPriceTo;
+    private JButton btnSearch;
+    private final TableRowSorter<DefaultTableModel> sorter;
     private KhachHangDAO khachHangDAO = new KhachHangDAO();
     private List<KhachHangDTO> listKH;
 
@@ -47,6 +49,7 @@ public class KhachHangPanel extends JPanel {
         };
         table = new JTable(tableModel);
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
             public Component getTableCellRendererComponent(JTable table,
                     Object value, boolean isSelected,
                     boolean hasFocus, int row, int column) {
@@ -74,82 +77,176 @@ public class KhachHangPanel extends JPanel {
         loadDataFromDB();
     }
 
+    private void applyAdvancedFilter() {
+        try {
+            // Lấy danh sách tất cả khách hàng
+            List<KhachHangDTO> filteredList = new ArrayList<>(listKH);
+
+            // Lọc theo tổng tiền nếu được nhập
+            String fromPriceText = txtPriceFrom.getText().trim();
+            String toPriceText = txtPriceTo.getText().trim();
+
+            if (!fromPriceText.isEmpty() && !toPriceText.isEmpty()) {
+                try {
+                    double fromPrice = Double.parseDouble(fromPriceText);
+                    double toPrice = Double.parseDouble(toPriceText);
+
+                    // Đảm bảo fromPrice <= toPrice
+                    if (fromPrice > toPrice) {
+                        JOptionPane.showMessageDialog(this,
+                                "Giá bắt đầu phải nhỏ hơn hoặc bằng giá kết thúc!",
+                                "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Lọc theo khoảng tổng tiền
+                    List<KhachHangDTO> priceFiltered = new ArrayList<>();
+                    for (KhachHangDTO kh : filteredList) {
+                        double totalSpent = kh.getTongTienDaMua();
+                        if (totalSpent >= fromPrice && totalSpent <= toPrice) {
+                            priceFiltered.add(kh);
+                        }
+                    }
+
+                    filteredList = priceFiltered;
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this,
+                            "Giá phải là số!",
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } else if (!fromPriceText.isEmpty() || !toPriceText.isEmpty()) {
+                // Only one price field filled
+                JOptionPane.showMessageDialog(this,
+                        "Vui lòng nhập đầy đủ khoảng giá!",
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Hiển thị kết quả lọc
+            loadFilteredData(filteredList);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Lỗi khi lọc dữ liệu: " + ex.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private JPanel createButtonPanel() {
         // Tạo một panel chứa toàn bộ toolbar
         JPanel toolbar = new JPanel();
-        toolbar.setLayout(new GridBagLayout()); // Sử dụng GridBagLayout để căn chỉnh chính xác
+        toolbar.setLayout(new BorderLayout(0, 5)); // Giảm khoảng cách dọc
         toolbar.setBackground(Color.WHITE);
         toolbar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.weightx = 0.0;
-        gbc.weighty = 1.0;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.insets = new Insets(0, 0, 0, 5); // Khoảng cách giữa các nút
+        // Panel trên chứa các buttons và search cơ bản
+        JPanel topPanel = new JPanel(new BorderLayout(5, 0));
+        topPanel.setBackground(Color.WHITE);
+
+        // Panel chứa các nút chức năng
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        buttonPanel.setBackground(Color.WHITE);
 
         // Tạo các buttons với icons 
         ImageIcon iconThem = new ImageIcon(getClass().getResource("/icon/them.png"));
         btnThem = new JButton("THÊM", iconThem);
         btnThem.setHorizontalTextPosition(SwingConstants.CENTER);
         btnThem.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnThem, gbc);
+        buttonPanel.add(btnThem);
 
-        gbc.gridx = 1;
         ImageIcon iconXoa = new ImageIcon(getClass().getResource("/icon/xoa.png"));
         btnXoa = new JButton("XÓA", iconXoa);
         btnXoa.setHorizontalTextPosition(SwingConstants.CENTER);
         btnXoa.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnXoa, gbc);
+        buttonPanel.add(btnXoa);
 
-        gbc.gridx = 2;
         ImageIcon iconSua = new ImageIcon(getClass().getResource("/icon/sua.png"));
         btnSua = new JButton("SỬA", iconSua);
         btnSua.setHorizontalTextPosition(SwingConstants.CENTER);
         btnSua.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnSua, gbc);
+        buttonPanel.add(btnSua);
 
-        gbc.gridx = 3;
-        ImageIcon iconExcel = new ImageIcon(getClass().getResource("/icon/xuatexcel.png"));
-        btnExcel = new JButton("XUẤT EXCEL", iconExcel);
-        btnExcel.setHorizontalTextPosition(SwingConstants.CENTER);
-        btnExcel.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnExcel, gbc);
-
-        gbc.gridx = 4;
         ImageIcon iconToggle = new ImageIcon(getClass().getResource("/icon/Toggle.png"));
-        JButton btnToggle = new JButton("Change status", iconToggle);
+        JButton btnToggle = new JButton("TRẠNG THÁI", iconToggle);
         btnToggle.setHorizontalTextPosition(SwingConstants.CENTER);
         btnToggle.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnToggle, gbc);
+        buttonPanel.add(btnToggle);
 
-        // Phần tìm kiếm bên phải
-        gbc.gridx = 4;
-        gbc.weightx = 1.0; // Phần này sẽ chiếm khoảng trống còn lại
-        toolbar.add(Box.createHorizontalGlue(), gbc); // Tạo khoảng trống giữa các nút và phần tìm kiếm
+        topPanel.add(buttonPanel, BorderLayout.WEST);
 
-        // Panel chứa các thành phần tìm kiếm
+        // Panel chứa các thành phần tìm kiếm - Cải tiến
         JPanel searchPanel = new JPanel();
-        searchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0)); // Căn phải, khoảng cách 5px
-        searchPanel.setOpaque(false);
+        searchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        searchPanel.setBackground(Color.WHITE);
 
-        // Thêm các thành phần vào panel tìm kiếm
         JLabel lblSearch = new JLabel("Tìm kiếm:");
+        lblSearch.setPreferredSize(new Dimension(65, 25));
+
         txtSearch = new JTextField();
         txtSearch.setPreferredSize(new Dimension(180, 25));
 
         btnLamMoi = new JButton("LÀM MỚI");
+        btnLamMoi.setPreferredSize(new Dimension(100, 26));
 
         searchPanel.add(lblSearch);
         searchPanel.add(txtSearch);
         searchPanel.add(btnLamMoi);
 
-        gbc.gridx = 5;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.weightx = 0.0;
-        toolbar.add(searchPanel, gbc);
+        topPanel.add(searchPanel, BorderLayout.EAST);
+
+        // Panel dưới chứa tìm kiếm nâng cao - Cải tiến
+        JPanel bottomPanel = new JPanel(new BorderLayout(0, 0));
+        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
+
+        // Panel bên trái (trống, để căn chỉnh)
+        JPanel leftPlaceholder = new JPanel();
+        leftPlaceholder.setBackground(Color.WHITE);
+        leftPlaceholder.setPreferredSize(buttonPanel.getPreferredSize());
+        bottomPanel.add(leftPlaceholder, BorderLayout.WEST);
+
+        // Panel tìm kiếm nâng cao - căn chỉnh giống phần search ở trên
+        JPanel advancedSearchPanel = new JPanel();
+        advancedSearchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        advancedSearchPanel.setBackground(Color.WHITE);
+
+        // Panel giá
+        JPanel pricePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        pricePanel.setBackground(Color.WHITE);
+
+        JLabel lblPriceFrom = new JLabel("Tổng tiền từ:");
+        lblPriceFrom.setPreferredSize(new Dimension(80, 25));
+        pricePanel.add(lblPriceFrom);
+
+        txtPriceFrom = new JTextField(7);
+        pricePanel.add(txtPriceFrom);
+
+        JLabel lblPriceTo = new JLabel("đến:");
+        lblPriceTo.setPreferredSize(new Dimension(35, 25));
+        pricePanel.add(lblPriceTo);
+
+        txtPriceTo = new JTextField(7);
+        pricePanel.add(txtPriceTo);
+
+        advancedSearchPanel.add(pricePanel);
+
+        // Panel nút lọc
+        JPanel buttonFilterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        buttonFilterPanel.setBackground(Color.WHITE);
+
+        btnSearch = new JButton("LỌC");
+        btnSearch.setPreferredSize(new Dimension(80, 26));
+        btnSearch.addActionListener(e -> applyAdvancedFilter());
+        buttonFilterPanel.add(btnSearch);
+
+        advancedSearchPanel.add(buttonFilterPanel);
+
+        bottomPanel.add(advancedSearchPanel, BorderLayout.EAST);
+
+        // Add everything to the main toolbar
+        toolbar.add(topPanel, BorderLayout.NORTH);
+        toolbar.add(bottomPanel, BorderLayout.CENTER);
 
         // === Sự kiện nút ===
         btnThem.addActionListener(e -> {
@@ -215,25 +312,30 @@ public class KhachHangPanel extends JPanel {
             }
         });
 
-        btnExcel.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Chức năng xuất Excel đang phát triển");
-        });
-
         btnLamMoi.addActionListener(e -> {
-            txtSearch.setText("");;
+            txtSearch.setText("");
             sorter.setRowFilter(null);
+
+            // Reset các trường tìm kiếm nâng cao
+            txtPriceFrom.setText("");
+            txtPriceTo.setText("");
+
+            loadDataFromDB(); // Tải lại dữ liệu từ database
         });
 
         // === Tìm kiếm + lọc ===
         txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 applyFilter();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 applyFilter();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 applyFilter();
             }
@@ -250,10 +352,8 @@ public class KhachHangPanel extends JPanel {
             try {
                 filters.add(RowFilter.regexFilter("(?i)" + Pattern.quote(text)));
             } catch (PatternSyntaxException ex) {
-                // bỏ qua nếu không hợp lệ
             }
         }
-
         if (filters.isEmpty()) {
             sorter.setRowFilter(null);
         } else {
@@ -286,4 +386,18 @@ public class KhachHangPanel extends JPanel {
         }
     }
 
+    private void loadFilteredData(List<KhachHangDTO> data) {
+        tableModel.setRowCount(0);
+        for (KhachHangDTO kh : data) {
+            String status = kh.getTrangThai() == 1 ? "Active" : "Inactive";
+            tableModel.addRow(new Object[]{
+                kh.getMaKhachHang(),
+                kh.getHoTenKH(),
+                kh.getSdtKH(),
+                kh.getDiaChiKH(),
+                kh.getTongTienDaMua(),
+                status
+            });
+        }
+    }
 }

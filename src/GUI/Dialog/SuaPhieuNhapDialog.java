@@ -59,7 +59,7 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
         createSanPhamTable();
         createPhieuNhapTable();
         addsanphamtoform();
-        pack();                      // Tự động căn kích thước theo nội dung
+        pack();                  
         setLocationRelativeTo(null);
         
         
@@ -258,7 +258,7 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
         }
         String input = JOptionPane.showInputDialog(null, "Nhập số lượng mới:", "Cập nhật số lượng", JOptionPane.PLAIN_MESSAGE);
 
-        if (input != null) { // Nếu người dùng không nhấn Cancel
+        if (input != null) { 
             try {
                 int soLuongMoi = Integer.parseInt(input);
                 System.out.println("Số lượng mới: " + soLuongMoi);
@@ -271,8 +271,8 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
                     return;
    
                 }
-                // Gán lại vào model nếu cần
-                modelPhieuNhap.setValueAt(soLuongMoi, row, 3); // Cột 3 là cột số lượng
+       
+                modelPhieuNhap.setValueAt(soLuongMoi, row, 3); 
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(null, "Vui lòng nhập số nguyên hợp lệ!");
             }
@@ -285,7 +285,7 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
         // TODO add your handling code here:
          ChiTietPhieuNhapBUS ctpnbus = new ChiTietPhieuNhapBUS();
          QuatBUS quatbus=new QuatBUS();
-    boolean isUpdated=false ; // Biến kiểm tra xem có dòng nào được cập nhật hay không
+    boolean isUpdated=false ; 
 
     for (int i = 0; i < modelPhieuNhap.getRowCount(); i++) {
         String maQuat = modelPhieuNhap.getValueAt(i, 0).toString();
@@ -326,7 +326,7 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
             }
             
         }
-    // Hiển thị thông báo tùy vào kết quả cập nhật
+   
 
     }
         if (isUpdated) {
@@ -457,10 +457,10 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
         NhaCungCapBUS nhaCungCapBLL = new NhaCungCapBUS();
         List<NhaCungCapDTO> danhSachNCC = nhaCungCapBLL.layTatCa();
 
-        combobox_nhacungcap.removeAllItems(); // Xóa dữ liệu cũ
+        combobox_nhacungcap.removeAllItems(); 
 
         for (NhaCungCapDTO ncc : danhSachNCC) {
-            combobox_nhacungcap.addItem(ncc.getTenNCC()); // giả sử có phương thức getTenNhaCungCap()
+            combobox_nhacungcap.addItem(ncc.getTenNCC()); 
         }
         PhieuNhapBUS pnbus=new PhieuNhapBUS();
         NhaCungCapBUS nccbus=new NhaCungCapBUS();
@@ -503,7 +503,7 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
         tablesanpham = new JTable(modelsanpham);
         JScrollPane scrollPane = new JScrollPane(tablesanpham);
 
-        // Thêm sự kiện chọn dòng
+   
         tablesanpham.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tablesanpham.getSelectedRow();
@@ -517,7 +517,7 @@ public class SuaPhieuNhapDialog extends javax.swing.JDialog {
                     System.out.println(tennhasanxuat);
                     text_nhasanxuat.setText(tennhasanxuat);
 
-                    // Các field khác nếu có...
+                  
                 }
             }
         });

@@ -24,14 +24,14 @@ public class ChiTietPhieuNhapBUS {
     }
     // Lấy toàn bộ danh sách chi tiết phiếu nhập
     public List<ChiTietPhieuNhapDTO> layTatCa() {
-        return ChiTietPhieuNhapDAO.getAllChiTietPhieuNhap();
+        return dao.getAllChiTietPhieuNhap();
     }
     public boolean themChiTietPhieuNhap(ChiTietPhieuNhapDTO ct) {
-    return ChiTietPhieuNhapDAO.themChiTietPhieuNhap(ct);
+    return dao.themChiTietPhieuNhap(ct);
 }   
   
-    public static List<ChiTietPhieuNhapDTO> getChiTietPhieuNhapByMaPN(String maPN) {
-        return ChiTietPhieuNhapDAO.getChiTietPhieuNhapByMaPN(maPN);
+    public  List<ChiTietPhieuNhapDTO> getChiTietPhieuNhapByMaPN(String maPN) {
+        return dao.getChiTietPhieuNhapByMaPN(maPN);
     }
     
     public boolean updatesoluong(String mapn,int soluong,String maQuat)
@@ -44,6 +44,5 @@ public class ChiTietPhieuNhapBUS {
 
 
 
-  
-    // Có thể bổ sung các chức năng khác như cập nhật, xóa nếu cần
+
 }

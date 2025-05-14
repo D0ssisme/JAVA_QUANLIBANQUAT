@@ -40,6 +40,7 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
     public String manv;
     private DefaultTableModel modelPhieuNhap;  // Lưu model để thêm dòng sau này
     private JTable tablePhieuNhap;
+    
     private DefaultTableModel modelsanpham; 
     private JTable tablesanpham;
     /**
@@ -277,15 +278,16 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
 
     private void btn_deletesanphamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_deletesanphamActionPerformed
         // TODO add your handling code here:
-          // Lấy chỉ số của dòng đang được chọn trong JTable
-    int selectedRow = tablePhieuNhap.getSelectedRow();  // "table" là tên JTable của bạn
+        
+    int selectedRow = tablePhieuNhap.getSelectedRow();  
 
-    // Kiểm tra nếu có dòng được chọn
+
     if (selectedRow != -1) {
-        // Xóa dòng được chọn khỏi DefaultTableModel
+     
         modelPhieuNhap.removeRow(selectedRow);
     } else {
-        // Hiển thị thông báo nếu không có dòng nào được chọn
+   
+        
         JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng để xóa.");
     }
         
@@ -307,7 +309,7 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
     PhieuNhapBUS pnbll=new PhieuNhapBUS();
     ChiTietPhieuNhapBUS ctpnbll=new ChiTietPhieuNhapBUS();
     int tongTien = 0;
-    DefaultTableModel model = modelPhieuNhap; // hoặc (DefaultTableModel) tablePhieuNhap.getModel();
+    DefaultTableModel model = modelPhieuNhap; 
     if (model.getRowCount() == 0) {
     JOptionPane.showMessageDialog(this, "Chưa thêm sản phẩm nhập!", "Thông báo", JOptionPane.WARNING_MESSAGE);
     return;
@@ -420,36 +422,6 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
     }
     
     
-    private void setupTableSelection() {
-    // Lắng nghe chọn dòng ở tablePhieuNhap
-    tablePhieuNhap.getSelectionModel().addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-        public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-            if (!e.getValueIsAdjusting()) {
-                if (tablePhieuNhap.getSelectedRow() != -1) {
-                    tablesanpham.clearSelection(); // Bỏ chọn tableSanPham
-                }
-            }
-        }
-    });
-
-    // Lắng nghe chọn dòng ở tableSanPham
-    tablesanpham.getSelectionModel().addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-        public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-            if (!e.getValueIsAdjusting()) {
-                if (tablesanpham.getSelectedRow() != -1) {
-                    tablePhieuNhap.clearSelection(); // Bỏ chọn tablePhieuNhap
-                }
-            }
-        }
-    });
-}
-
-    
-    
-    
-    
-    
-    
     
     
     public void locktext()
@@ -469,7 +441,7 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
 
     private void createPhieuNhapTable() {
         String[] columnNames = {"Mã", "Tên", "Giá", "Số lượng", "Ngày sản xuất", "Chất liệu","Nhả Sản Xuất"};
-        modelPhieuNhap = new DefaultTableModel(columnNames, 0); // Tạo model rỗng
+        modelPhieuNhap = new DefaultTableModel(columnNames, 0); 
         tablePhieuNhap = new JTable(modelPhieuNhap);
         JScrollPane scrollPane = new JScrollPane(tablePhieuNhap);
         scrollPane.setPreferredSize(new Dimension(800, 150));
@@ -480,7 +452,8 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
         panel_tablephieunhap.revalidate();
         panel_tablephieunhap.repaint();
     }
-
+    
+   
 
     
     private void addsanphamtoform() {
@@ -546,7 +519,7 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
         tablesanpham = new JTable(modelsanpham);
         JScrollPane scrollPane = new JScrollPane(tablesanpham);
 
-        // Thêm sự kiện chọn dòng
+    
         tablesanpham.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tablesanpham.getSelectedRow();
@@ -560,7 +533,6 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
                     System.out.println(tennhasanxuat);
                     txt_nhasanxuat.setText(tennhasanxuat);
 
-                    // Các field khác nếu có...
                 }
             }
         });
@@ -570,6 +542,9 @@ public class ThemPhieuNhapDialog extends javax.swing.JDialog {
         panel.add(scrollPane, java.awt.BorderLayout.CENTER);
         panel.revalidate();
         panel.repaint();
+        
+        
+        
         PhieuNhapBUS pnbll=new PhieuNhapBUS();
         txt_maphieunhap.setText(pnbll.taoMaPhieuNhapTuDong());
          NhanVienBUS nvbus=new NhanVienBUS();

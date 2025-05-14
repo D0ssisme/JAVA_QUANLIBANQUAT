@@ -248,7 +248,7 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
         File fileToSave = fileChooser.getSelectedFile();
 
         try {
-            // Tải font tùy chỉnh nếu có
+  
             String fontPath = "src/font/DejaVuSans.ttf";
             BaseFont baseFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
             Font font = new Font(baseFont, 12);
@@ -263,12 +263,12 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
             String currentTime = LocalDateTime.now().format(formatter);
 
             Paragraph timePrint = new Paragraph("Thời gian in phiếu: " + currentTime, font);
-            timePrint.setAlignment(Element.ALIGN_RIGHT);     // Căn phải
-            timePrint.setSpacingAfter(10f);                  // Khoảng cách phía dưới (nếu cần)
+            timePrint.setAlignment(Element.ALIGN_RIGHT);     
+            timePrint.setSpacingAfter(10f);                
             document.add(timePrint);
 
    
-            // Tiêu đề "THÔNG TIN PHIẾU NHẬP"
+          
            Font titleFont = new Font(baseFont, 18, Font.BOLD); // Cỡ 18, in đậm
             Paragraph title = new Paragraph("THÔNG TIN PHIẾU NHẬP", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
@@ -277,26 +277,25 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
             
             
             
-            
-            // Thông tin chung
+      
             document.add(new Paragraph("Mã phiếu:"+mapn , font));
             document.add(new Paragraph("Nhà cung cấp:"+tenncc, font));
             
             document.add(new Paragraph("Thời gian nhập:"+thoigiantao, font));
             document.add(new Paragraph("Người thực hiện:"+tennvnhap+" Mã Nhân Viên:"+manv, font));
-            document.add(new Paragraph("\n")); // Xuống một dòng
+            document.add(new Paragraph("\n")); 
 
 
-            PdfPTable table = new PdfPTable(5); // 5 cột
+            PdfPTable table = new PdfPTable(5); 
             table.setWidthPercentage(100);
 
-            // Thêm header
+    
             String[] headers = {"Mã Quạt", "Tên Quạt", "Số Lượng", "Đơn giá", "Thành Tiền"};
             for (String header : headers) {
                 table.addCell(new PdfPCell(new Phrase(header, titletable)));
             }
 
-            // Duyệt từng dòng trong model để thêm vào bảng PDF
+     
             for (int row = 0; row < model.getRowCount(); row++) {
                 for (int col = 0; col < model.getColumnCount(); col++) {
                     Object value = model.getValueAt(row, col);
@@ -308,28 +307,28 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
 
             // Tổng tiền
             document.add(new Paragraph("Tổng thành tiền: "+tongtien+"đ", font));
-            document.add(new Paragraph("\n")); // Xuống một dòng
+            document.add(new Paragraph("\n")); 
 
-            // Chữ ký người lập phiếu, nhân viên nhận, nhà cung cấp
-            PdfPTable signatureTable = new PdfPTable(3); // 3 cột cho 3 phần chữ ký
+       
+            PdfPTable signatureTable = new PdfPTable(3); 
             signatureTable.setWidthPercentage(100);
 
-            // Tạo từng ô không có viền
+        
             PdfPCell cell1 = new PdfPCell(new Phrase("Người lập phiếu\n(Ký và ghi rõ họ tên)", font));
             PdfPCell cell2 = new PdfPCell(new Phrase("Nhân viên nhận\n(Ký và ghi rõ họ tên)", font));
             PdfPCell cell3 = new PdfPCell(new Phrase("Nhà cung cấp\n(Ký và ghi rõ họ tên)", font));
 
-            // Xóa viền
+         
             cell1.setBorder(PdfPCell.NO_BORDER);
             cell2.setBorder(PdfPCell.NO_BORDER);
             cell3.setBorder(PdfPCell.NO_BORDER);
 
-            // Căn giữa nội dung
+          
             cell1.setHorizontalAlignment(Element.ALIGN_CENTER);
             cell2.setHorizontalAlignment(Element.ALIGN_CENTER);
             cell3.setHorizontalAlignment(Element.ALIGN_CENTER);
 
-            // Thêm ô vào bảng
+        
             signatureTable.addCell(cell1);
             signatureTable.addCell(cell2);
             signatureTable.addCell(cell3);
@@ -339,7 +338,7 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
 
             document.close();
 
-            // Mở file PDF sau khi in
+            
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().open(fileToSave);
             }
@@ -408,12 +407,12 @@ public class ChiTietPhieuNhapDialog extends javax.swing.JDialog {
 
      
     public void hienThiThongTinPhieuNhap(){
-        // Lấy thông tin phiếu nhập từ BLL
+   
         PhieuNhapDTO pn=new PhieuNhapDTO();
         PhieuNhapBUS pnbll=new PhieuNhapBUS();
          pn = pnbll.findphieunhapfrommapn(this.maPhieuNhap);
 
-        // Hiển thị thông tin phiếu nhập lên các TextField
+       
         if (pn != null) {
             text_maphieunhap.setText(pn.getMaPhieuNhap());
             text_thoigiantao.setText(pn.getNgayNhap().toString());
@@ -430,7 +429,8 @@ public void hienThiBangPhieuNhap() {
     String[] columnNames = {"Mã quạt","Tên Quạt", "Số lượng", "Đơn giá", "Thành tiền"};
     int tongtien=0;
     // Lấy dữ liệu từ BLL
-    List<ChiTietPhieuNhapDTO> dsCTPN = ChiTietPhieuNhapBUS.getChiTietPhieuNhapByMaPN(this.maPhieuNhap);
+    ChiTietPhieuNhapBUS ctpnbus= new ChiTietPhieuNhapBUS();
+    List<ChiTietPhieuNhapDTO> dsCTPN = ctpnbus.getChiTietPhieuNhapByMaPN(this.maPhieuNhap);
 
     // Chuyển sang Object[][]
     Object[][] data = new Object[dsCTPN.size()][5];
@@ -446,14 +446,11 @@ public void hienThiBangPhieuNhap() {
     text_tongtien.setText(String.valueOf(tongtien));
 
 
-    // Tạo model và bảng
+
     model = new DefaultTableModel(data, columnNames);
     JTable table = new JTable(model);
-
-    // Cho bảng vào JScrollPane
     JScrollPane scrollPane = new JScrollPane(table);
 
-    // Hiển thị vào panel
     paneltest.removeAll();
     paneltest.setLayout(new BorderLayout());
     paneltest.add(scrollPane, BorderLayout.CENTER);
@@ -462,9 +459,7 @@ public void hienThiBangPhieuNhap() {
 }
 
     
-    
-    
-    
+
     
     
     

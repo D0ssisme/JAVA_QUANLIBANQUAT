@@ -21,7 +21,7 @@ import java.util.List;
 
 public class PhieuNhapDAO {
     
- public static String taoMaPhieuNhapTuDong() {
+ public  String taoMaPhieuNhapTuDong() {
     String sql = "SELECT MaPhieuNhap FROM PhieuNhap ORDER BY MaPhieuNhap DESC LIMIT 1";
     try (
         Connection conn = DBConnection.getConnection();
@@ -29,27 +29,27 @@ public class PhieuNhapDAO {
         ResultSet rs = stmt.executeQuery()
     ) {
         if (rs.next()) {
-            String maCu = rs.getString("MaPhieuNhap"); // Ví dụ: PN007
-            int so = Integer.parseInt(maCu.substring(2)); // Cắt bỏ 'PN' -> 7
+            String maCu = rs.getString("MaPhieuNhap"); 
+            int so = Integer.parseInt(maCu.substring(2)); 
             so++; // Tăng lên 1
-            return String.format("PN%03d", so); // -> PN008
+            return String.format("PN%03d", so); 
         } else {
-            return "PN001"; // Nếu chưa có mã nào
+            return "PN001"; 
         }
     } catch (SQLException e) {
         e.printStackTrace();
-        return "PN001"; // Trả về mặc định nếu lỗi
+        return "PN001"; 
     }
 }
 
-    // Lấy danh sách tất cả phiếu nhập
-    public static List<PhieuNhapDTO> getAllPhieuNhap() {
+
+    public  List<PhieuNhapDTO> getAllPhieuNhap() {
         List<PhieuNhapDTO> ds = new ArrayList<>();
 
-        String sql = "SELECT * FROM PhieuNhap";  // hoặc đặt tên bảng đúng theo DB của bạn
+        String sql = "SELECT * FROM PhieuNhap"; 
 
         try (
-            Connection conn = DBConnection.getConnection();  // bạn cần có class DBConnection
+            Connection conn = DBConnection.getConnection();  
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery()
         ) {
@@ -71,8 +71,8 @@ public class PhieuNhapDAO {
         return ds;
     }
     
-    // Thêm một phiếu nhập mới
-public static boolean themPhieuNhap(PhieuNhapDTO pn) {
+
+public  boolean themPhieuNhap(PhieuNhapDTO pn) {
     String sql = "INSERT INTO PhieuNhap (MaPhieuNhap, NgayNhap, MaNCC, MaNhanVien, TongTien) VALUES (?, ?, ?, ?, ?)";
 
     try (
@@ -93,7 +93,7 @@ public static boolean themPhieuNhap(PhieuNhapDTO pn) {
     }
 }
 
-public static PhieuNhapDTO findPhieuNhapFromMaPN(String maPN) {
+public  PhieuNhapDTO findPhieuNhapFromMaPN(String maPN) {
     String sql = "SELECT * FROM PhieuNhap WHERE MaPhieuNhap = ?";
     
     try (
@@ -116,7 +116,7 @@ public static PhieuNhapDTO findPhieuNhapFromMaPN(String maPN) {
         e.printStackTrace();
     }
 
-    return null; // Nếu không tìm thấy
+    return null; 
 }
 
 

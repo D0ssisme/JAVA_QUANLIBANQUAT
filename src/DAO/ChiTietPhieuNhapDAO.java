@@ -62,11 +62,11 @@ public class ChiTietPhieuNhapDAO {
        
     
     
-    // Lấy tất cả chi tiết phiếu nhập
+
     public static List<ChiTietPhieuNhapDTO> getAllChiTietPhieuNhap() {
         List<ChiTietPhieuNhapDTO> ds = new ArrayList<>();
 
-        String sql = "SELECT * FROM chitiet_phieunhap";  // Đảm bảo đúng tên bảng
+        String sql = "SELECT * FROM chitiet_phieunhap"; 
 
         try (
             Connection conn = DBConnection.getConnection();
@@ -120,7 +120,7 @@ public class ChiTietPhieuNhapDAO {
     
     
     
-   public static List<ChiTietPhieuNhapDTO> getChiTietPhieuNhapByMaPN(String maPN) {
+   public  List<ChiTietPhieuNhapDTO> getChiTietPhieuNhapByMaPN(String maPN) {
     List<ChiTietPhieuNhapDTO> ds = new ArrayList<>();
 
     String sql = "SELECT * FROM chitiet_phieunhap WHERE MaPhieuNhap = ?";
@@ -149,7 +149,7 @@ public class ChiTietPhieuNhapDAO {
     return ds;
 }
 
-    public static boolean themChiTietPhieuNhap(ChiTietPhieuNhapDTO ct) {
+    public  boolean themChiTietPhieuNhap(ChiTietPhieuNhapDTO ct) {
     String sql = "INSERT INTO chitiet_phieunhap (MaPhieuNhap, MaQuat, SoLuong, DonGia, ThanhTien) VALUES (?, ?, ?, ?, ?)";
     Connection conn = null;
     PreparedStatement stmt = null;
@@ -167,9 +167,9 @@ public class ChiTietPhieuNhapDAO {
         
         int rowsAffected = stmt.executeUpdate();
         
-        // Kiểm tra xem có thêm được bản ghi không
+       
         if (rowsAffected > 0) {
-            conn.commit();  // Commit chỉ khi thành công
+            conn.commit();  
             System.out.println("Thêm chi tiết phiếu nhập thành công. Rows affected: " + rowsAffected);
             return true;
         } else {
@@ -182,7 +182,7 @@ public class ChiTietPhieuNhapDAO {
         e.printStackTrace();
         if (conn != null) {
             try {
-                conn.rollback();  // Rollback nếu có lỗi
+                conn.rollback();  
                 System.out.println("Đã rollback transaction");
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -190,7 +190,7 @@ public class ChiTietPhieuNhapDAO {
         }
         return false;
     } finally {
-        // Đóng tất cả các resource
+
         if (stmt != null) {
             try {
                 stmt.close();
@@ -200,7 +200,7 @@ public class ChiTietPhieuNhapDAO {
         }
         if (conn != null) {
             try {
-                conn.setAutoCommit(true);  // Reset lại auto-commit
+                conn.setAutoCommit(true);  
                 conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();

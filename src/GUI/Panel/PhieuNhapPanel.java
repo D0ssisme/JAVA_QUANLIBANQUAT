@@ -47,7 +47,6 @@ public class PhieuNhapPanel extends JPanel {
     private JTextField txtSearch;
     private JDateChooser dateChooserTuNgay;
     private JDateChooser dateChooserDenNgay;
-
     private JTable table;
     private DefaultTableModel tableModel;
 
@@ -150,7 +149,7 @@ public class PhieuNhapPanel extends JPanel {
 
         // 3. Thêm mã NCC vào model
         for (NhaCungCapDTO ncc : danhSachNCC) {
-            model.addElement(ncc.getMaNCC());
+            model.addElement(ncc.getTenNCC());
         }
 
         // 4. Gán model cho ComboBox
@@ -257,16 +256,16 @@ public class PhieuNhapPanel extends JPanel {
             Date ngayend=dateChooserDenNgay.getDate();
             int tongtienstar=0;
             int tongtienend=0;
-            String text = txtTuSoTien.getText();  // Lấy giá trị từ JTextField
+            String text = txtTuSoTien.getText(); 
             try {
-                 tongtienstar = Integer.parseInt(text);  // Chuyển đổi String thành int
+                 tongtienstar = Integer.parseInt(text);  
                 System.out.println("Số đã nhập: " + tongtienstar);
             } catch (NumberFormatException ex) { 
                 System.out.println("GIA TRI NHAP VAO KHONG HOP LE .");
             }
             String text2=txtDenSotien.getText();
             try {
-                tongtienend = Integer.parseInt(text2);  // Chuyển đổi String thành int
+                tongtienend = Integer.parseInt(text2);  
                 System.out.println("Số đã nhập: " + tongtienend);
             } catch (NumberFormatException ex) { 
                 System.out.println("GIA TRI NHAP VAO KHONG HOP LE .");
@@ -285,6 +284,7 @@ public class PhieuNhapPanel extends JPanel {
             
         });
         btnTimKiem2.addActionListener(e-> load_datatimkiem());
+        
         btnThem.addActionListener(e -> {
         ThemPhieuNhapDialog dialog = new ThemPhieuNhapDialog((Frame) SwingUtilities.getWindowAncestor(this), true,this.manv);
         dialog.setLocationRelativeTo(this); // Căn giữa với frame cha
@@ -296,15 +296,11 @@ public class PhieuNhapPanel extends JPanel {
 
         btnChiTiet.addActionListener(e -> {   
         int row = table.getSelectedRow();
-    // Nếu không có dòng nào được chọn
         if (row == -1) {
         JOptionPane.showMessageDialog(this, "Vui lòng chọn phiếu nhập để xem chi tiết.");
         return;
         }
-        // Lấy mã phiếu nhập từ cột thứ 2 (giả sử cột mã phiếu nhập là cột thứ 2)
         String maPhieuNhap = table.getValueAt(row, 1).toString();
-        // Mở dialog hiển thị chi tiết phiếu nhập
-       // Mở dialog hiển thị chi tiết phiếu nhập và truyền mã phiếu nhập vào
         ChiTietPhieuNhapDialog dialog = new ChiTietPhieuNhapDialog(new JFrame(), true, maPhieuNhap);
         dialog.setVisible(true);
 
@@ -313,7 +309,7 @@ public class PhieuNhapPanel extends JPanel {
         
         btnSuaPhieu.addActionListener(e -> {
                int row = table.getSelectedRow();
-    // Nếu không có dòng nào được chọn
+ 
         if (row == -1) {
         JOptionPane.showMessageDialog(this, "Vui lòng chọn phiếu nhập để xem chi tiết.");
         return;
@@ -356,12 +352,12 @@ public class PhieuNhapPanel extends JPanel {
                     }
                 }
 
-                // Ghi file
+            
                 FileOutputStream fileOut = new FileOutputStream(fileToSave);
                 workbook.write(fileOut);
                 fileOut.close();
 
-                // Mở file sau khi xuất
+
                 Desktop.getDesktop().open(fileToSave);
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -384,25 +380,25 @@ private void load_datatimkiem()
 {
       String type = cbbSearchType.getSelectedItem().toString();
             String keyword = txtSearch.getText().trim();
-            loadData(type, keyword);
+            load(type, keyword);
 }
     
 private void loadData() {
-    // Xóa dữ liệu cũ
+ 
     tableModel.setRowCount(0);
+        NhaCungCapBUS nccbus =new NhaCungCapBUS();
 
-    // Lấy danh sách phiếu nhập và map MaNCC -> TenNCC
     List<PhieuNhapDTO> danhSach = new PhieuNhapBUS().getAllPhieuNhap();
-    Map<String, String> nhaCungCapMap = PhieuNhapBUS.getTenNhaCungCapMap();
+  
 
     int stt = 1;
     for (PhieuNhapDTO pn : danhSach) {
-        String tenNCC = nhaCungCapMap.getOrDefault(pn.getMaNCC(), "Không rõ");
+        String tenNCC=nccbus.layTenNhaCungCapTheoMa(pn.getMaNCC());
         tableModel.addRow(new Object[]{
             stt++,
             pn.getMaPhieuNhap(),
             tenNCC,
-            pn.getMaNhanVien(), // hoặc map tên nhân viên nếu cần
+            pn.getMaNhanVien(), 
             pn.getNgayNhap(),
             pn.getTongTien()
         });
@@ -412,22 +408,23 @@ private void loadData() {
     
 
 
-private void loadDataFromFilter(String mancc,String manv,Date ngaystar,Date ngayend,int tongtienstar,int tongtienend) {
+private void loadDataFromFilter(String tenncc,String manv,Date ngaystar,Date ngayend,int tongtienstar,int tongtienend) {
         // Xóa dữ liệu cũ
         tableModel.setRowCount(0);
+        NhaCungCapBUS nccbus =new NhaCungCapBUS();
 
-        // Lấy danh sách phiếu nhập và map MaNCC -> TenNCC
-        List<PhieuNhapDTO> danhSach = new PhieuNhapBUS().get_filter(manv, mancc, ngaystar, ngayend, tongtienstar, tongtienend);
-        Map<String, String> nhaCungCapMap = PhieuNhapBUS.getTenNhaCungCapMap();
+     
+        List<PhieuNhapDTO> danhSach = new PhieuNhapBUS().get_filter(manv, tenncc, ngaystar, ngayend, tongtienstar, tongtienend);
+
 
         int stt = 1;
         for (PhieuNhapDTO pn : danhSach) {
-            String tenNCC = nhaCungCapMap.getOrDefault(pn.getMaNCC(), "Không rõ");
+            String tenNCC=nccbus.layTenNhaCungCapTheoMa(pn.getMaNCC());
             tableModel.addRow(new Object[]{
                 stt++,
                 pn.getMaPhieuNhap(),
                 tenNCC,
-                pn.getMaNhanVien(), // hoặc map tên nhân viên nếu cần
+                pn.getMaNhanVien(), 
                 pn.getNgayNhap(),
                 pn.getTongTien()
             });
@@ -438,34 +435,63 @@ private void loadDataFromFilter(String mancc,String manv,Date ngaystar,Date ngay
 
 
 
-private void loadData(String type, String keyword) {
+private void load(String type,String keyword)
+{
+    int stt=1;
+ 
     tableModel.setRowCount(0);
-
-    List<PhieuNhapDTO> danhSach = new PhieuNhapBUS().getAllPhieuNhap();
-    Map<String, String> nhaCungCapMap = PhieuNhapBUS.getTenNhaCungCapMap();
-
-    int stt = 1;
-    for (PhieuNhapDTO pn : danhSach) {
-        String tenNCC = nhaCungCapMap.getOrDefault(pn.getMaNCC(), "Không rõ");
-
-        boolean match = switch (type) {
-            case "Tất cả" -> true;
-            case "Mã phiếu nhập" -> pn.getMaPhieuNhap().toLowerCase().contains(keyword.toLowerCase());
-            case "Nhà cung cấp" -> tenNCC.toLowerCase().contains(keyword.toLowerCase());
-            case "Nhân viên nhập" -> pn.getMaNhanVien().toLowerCase().contains(keyword.toLowerCase()); // Hoặc map tên nhân viên nếu cần
-            default -> true;
-        };
-
-        if (match) {
+    List<PhieuNhapDTO> ds =new ArrayList<>();
+    ds=new PhieuNhapBUS().getAllPhieuNhap();
+    NhaCungCapBUS nccbus=new NhaCungCapBUS();
+    for (PhieuNhapDTO pn : ds)
+    {
+        boolean check=false;
+        switch (type)
+        {
+            case "Tất cả":
+                check=true;
+                break;
+            case "Mã phiếu nhập":
+                if(pn.getMaPhieuNhap().toLowerCase().contains(keyword.toLowerCase()))
+                {
+                    check=true;
+                    
+                }
+                break;
+            case "Nhà cung cấp" :
+                if(nccbus.layTenNhaCungCapTheoMa(pn.getMaNCC()).toLowerCase().contains(keyword.toLowerCase()))
+                {
+                    
+                    check=true;;
+                    
+                }
+                break;
+            case "Nhân viên nhập":
+            {
+                if(pn.getMaNhanVien().toLowerCase().contains(keyword.toLowerCase()))
+                {
+                    check=true;
+                     
+                }
+                break;
+            }
+                
+        }
+        if(check)
+        {
             tableModel.addRow(new Object[]{
                 stt++,
                 pn.getMaPhieuNhap(),
-                tenNCC,
+                nccbus.layTenNhaCungCapTheoMa(pn.MaNCC),
                 pn.getMaNhanVien(),
                 pn.getNgayNhap(),
                 pn.getTongTien()
+                
+            
             });
+            
         }
+        
     }
 }
 

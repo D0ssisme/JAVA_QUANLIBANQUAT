@@ -1,3 +1,4 @@
+
 package DAO;
 
 import DTO.NhanVienDTO;
@@ -5,7 +6,15 @@ import java.sql.*;
 import java.util.*;
 import DTO.DBConnection;
 
+/**
+ * Lớp thực hiện các thao tác CRUD (Create, Read, Update, Delete) 
+ */
 public class NhanVienDAO {
+    /**
+     * Lấy tất cả nhân viên từ CSDL
+     * 
+     * @return Danh sách tất cả nhân viên
+     */
     public List<NhanVienDTO> getAll() throws SQLException {
         List<NhanVienDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM `nhanvien`";
@@ -24,6 +33,13 @@ public class NhanVienDAO {
         }
         return list;
     }
+    
+    /**
+     * Lấy tên nhân viên theo mã nhân viên
+     * 
+     * @param manv Mã nhân viên cần tìm
+     * @return Tên nhân viên, null nếu không tìm thấy
+     */
     public String getTenNhanVienByManv(String manv) {
       String sql = "SELECT HoTenNV FROM nhanvien WHERE MaNhanVien = ?";
       try (
@@ -42,6 +58,11 @@ public class NhanVienDAO {
       return null; // hoặc return "Không tìm thấy";
   }
 
+    /**
+     * Thêm một nhân viên mới vào CSDL
+     * 
+     * @param nv Đối tượng nhân viên cần thêm
+     */
     public void insert(NhanVienDTO nv) throws SQLException {
         String sql = "INSERT INTO `nhanvien` VALUES (?,?,?,?,?)";
         try (Connection c = DBConnection.getConnection();
@@ -55,6 +76,11 @@ public class NhanVienDAO {
         }
     }
 
+    /**
+     * Cập nhật thông tin nhân viên
+     * 
+     * @param nv Đối tượng nhân viên với thông tin đã cập nhật
+     */
     public void update(NhanVienDTO nv) throws SQLException {
         String sql = "UPDATE `nhanvien` SET HoTenNV=?, ChucVu=?, Sdt_NV=?, DiaChiNV=? WHERE MaNhanVien=?";
         try (Connection c = DBConnection.getConnection();
@@ -68,6 +94,11 @@ public class NhanVienDAO {
         }
     }
 
+    /**
+     * Xóa nhân viên khỏi CSDL
+     * 
+     * @param maNV Mã nhân viên cần xóa
+     */
     public void delete(String maNV) throws SQLException {
         String sql = "DELETE FROM `nhanvien` WHERE MaNhanVien=?";
         try (Connection c = DBConnection.getConnection();

@@ -3,17 +3,17 @@ package GUI.Panel;
 import DAO.HoaDonDAO;
 import DTO.HoaDonDTO;
 import GUI.Dialog.ChiTietHoaDonDialog;
-
+import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.swing.border.EmptyBorder;
 
-public class HoaDonPanel extends JPanel implements ItemListener, KeyListener {
+public class HoaDonPanel extends JPanel implements ItemListener {
 
     private JButton btnXoa, btnChiTiet, btnExcel, btnLamMoi;
     private JComboBox<String> cbbFilter;
@@ -21,6 +21,10 @@ public class HoaDonPanel extends JPanel implements ItemListener, KeyListener {
     private JTable table;
     private DefaultTableModel tableModel;
     private List<HoaDonDTO> listHD;
+    private JCheckBox chkDateFilter, chkPriceFilter;
+    private JDateChooser dateFrom, dateTo;
+    private JTextField txtPriceFrom, txtPriceTo;
+    private JButton btnSearch;
 
     public HoaDonPanel() {
         setLayout(new BorderLayout(10, 10));
@@ -46,76 +50,221 @@ public class HoaDonPanel extends JPanel implements ItemListener, KeyListener {
         loadDataFromDAO();
     }
 
+    private void applyAdvancedFilter() {
+        try {
+            // Lấy danh sách tất cả hóa đơn
+            List<HoaDonDTO> filteredList = new ArrayList<>(listHD);
+
+            // Lọc theo ngày nếu có ngày được chọn
+            Date fromDate = dateFrom.getDate();
+            Date toDate = dateTo.getDate();
+
+            if (fromDate != null && toDate != null) {
+                if (fromDate.after(toDate)) {
+                    JOptionPane.showMessageDialog(this,
+                            "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc!",
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                // Lọc theo khoảng ngày
+                List<HoaDonDTO> dateFiltered = new ArrayList<>();
+                for (HoaDonDTO hd : filteredList) {
+                    Date orderDate = new Date(hd.getNgayLap().getTime());
+                    if ((orderDate.equals(fromDate) || orderDate.after(fromDate))
+                            && (orderDate.equals(toDate) || orderDate.before(toDate))) {
+                        dateFiltered.add(hd);
+                    }
+                }
+                filteredList = dateFiltered;
+            } else if (fromDate != null || toDate != null) {
+                JOptionPane.showMessageDialog(this,
+                        "Vui lòng chọn đầy đủ khoảng ngày!",
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            // Lọc theo giá nếu có giá được nhập
+            String fromPriceText = txtPriceFrom.getText().trim();
+            String toPriceText = txtPriceTo.getText().trim();
+
+            if (!fromPriceText.isEmpty() && !toPriceText.isEmpty()) {
+                try {
+                    int fromPrice = Integer.parseInt(fromPriceText);
+                    int toPrice = Integer.parseInt(toPriceText);
+                    if (fromPrice > toPrice) {
+                        JOptionPane.showMessageDialog(this,
+                                "Giá bắt đầu phải nhỏ hơn hoặc bằng giá kết thúc!",
+                                "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Lọc theo khoảng giá
+                    List<HoaDonDTO> priceFiltered = new ArrayList<>();
+                    for (HoaDonDTO hd : filteredList) {
+                        int price = hd.getTongTien();
+                        if (price >= fromPrice && price <= toPrice) {
+                            priceFiltered.add(hd);
+                        }
+                    }
+
+                    filteredList = priceFiltered;
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this,
+                            "Giá phải là số!",
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } else if (!fromPriceText.isEmpty() || !toPriceText.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Vui lòng nhập đầy đủ khoảng giá!",
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            // Hiển thị kết quả lọc
+            loadDataToTable(filteredList);
+        } catch (HeadlessException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Lỗi khi lọc dữ liệu: " + ex.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private JPanel createButtonPanel() {
         // Tạo một panel chứa toàn bộ toolbar
         JPanel toolbar = new JPanel();
-        toolbar.setLayout(new GridBagLayout()); // Sử dụng GridBagLayout để căn chỉnh chính xác
+        toolbar.setLayout(new BorderLayout(0, 5)); // Giảm khoảng cách dọc
         toolbar.setBackground(Color.WHITE);
         toolbar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.weightx = 0.0;
-        gbc.weighty = 1.0;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.insets = new Insets(0, 0, 0, 5); // Khoảng cách giữa các nút
+        // Panel trên chứa các buttons và search cơ bản
+        JPanel topPanel = new JPanel(new BorderLayout(5, 0));
+        topPanel.setBackground(Color.WHITE);
+
+        // Panel chứa các nút chức năng
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        buttonPanel.setBackground(Color.WHITE);
 
         // Button "Xóa" with icon
         ImageIcon iconXoa = new ImageIcon(getClass().getResource("/icon/xoa.png"));
         btnXoa = new JButton("XÓA", iconXoa);
         btnXoa.setHorizontalTextPosition(SwingConstants.CENTER);
         btnXoa.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnXoa, gbc);
+        buttonPanel.add(btnXoa);
 
         // Button "Chi tiết" with icon
-        gbc.gridx = 1;
         ImageIcon iconChiTiet = new ImageIcon(getClass().getResource("/icon/chitiet.png"));
         btnChiTiet = new JButton("CHI TIẾT", iconChiTiet);
         btnChiTiet.setHorizontalTextPosition(SwingConstants.CENTER);
         btnChiTiet.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnChiTiet, gbc);
+        buttonPanel.add(btnChiTiet);
 
         // Button "Xuất Excel" with icon
-        gbc.gridx = 2;
         ImageIcon iconExcel = new ImageIcon(getClass().getResource("/icon/xuatexcel.png"));
         btnExcel = new JButton("XUẤT EXCEL", iconExcel);
         btnExcel.setHorizontalTextPosition(SwingConstants.CENTER);
         btnExcel.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnExcel, gbc);
+        buttonPanel.add(btnExcel);
 
-        // Phần tìm kiếm bên phải
-        gbc.gridx = 3;
-        gbc.weightx = 1.0; // Phần này sẽ chiếm khoảng trống còn lại
-        toolbar.add(Box.createHorizontalGlue(), gbc); // Tạo khoảng trống giữa các nút và phần tìm kiếm
+        topPanel.add(buttonPanel, BorderLayout.WEST);
 
-        // Panel chứa các thành phần tìm kiếm
+        // SearchPanel - Cải tiến giao diện tìm kiếm
         JPanel searchPanel = new JPanel();
-        searchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0)); // Căn phải, khoảng cách 5px
-        searchPanel.setOpaque(false);
+        searchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        searchPanel.setBackground(Color.WHITE);
 
-        // Thêm các thành phần vào panel tìm kiếm
         JLabel lblFilter = new JLabel("Lọc:");
         cbbFilter = new JComboBox<>(new String[]{"Tất cả", "Mã HĐ", "Mã NV", "Mã KH"});
+        cbbFilter.setPreferredSize(new Dimension(100, 25));
         cbbFilter.addItemListener(this);
-        
+
         txtSearch = new JTextField();
         txtSearch.setPreferredSize(new Dimension(180, 25));
         setupSearchPlaceholder();
-        txtSearch.addKeyListener(this);
-        
+
         btnLamMoi = new JButton("LÀM MỚI");
+        btnLamMoi.setPreferredSize(new Dimension(100, 26));
 
         searchPanel.add(lblFilter);
         searchPanel.add(cbbFilter);
         searchPanel.add(txtSearch);
         searchPanel.add(btnLamMoi);
 
-        gbc.gridx = 4;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.weightx = 0.0;
-        toolbar.add(searchPanel, gbc);
+        topPanel.add(searchPanel, BorderLayout.EAST);
+
+        // Panel dưới chứa tìm kiếm nâng cao - Cải tiến bố cục
+        JPanel bottomPanel = new JPanel(new BorderLayout(0, 0));
+        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
+
+        // Panel bên trái (trống, để căn chỉnh)
+        JPanel leftPlaceholder = new JPanel();
+        leftPlaceholder.setBackground(Color.WHITE);
+        leftPlaceholder.setPreferredSize(buttonPanel.getPreferredSize());
+        bottomPanel.add(leftPlaceholder, BorderLayout.WEST);
+
+        // Panel tìm kiếm nâng cao - căn chỉnh giống phần search ở trên
+        JPanel advancedSearchPanel = new JPanel();
+        advancedSearchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        advancedSearchPanel.setBackground(Color.WHITE);
+
+        // Panel giá
+        JPanel pricePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        pricePanel.setBackground(Color.WHITE);
+        JLabel lblPriceFrom = new JLabel("Giá từ:");
+        lblPriceFrom.setPreferredSize(new Dimension(45, 25));
+        pricePanel.add(lblPriceFrom);
+
+        txtPriceFrom = new JTextField(7);
+        pricePanel.add(txtPriceFrom);
+
+        JLabel lblPriceTo = new JLabel("đến:");
+        lblPriceTo.setPreferredSize(new Dimension(30, 25));
+        pricePanel.add(lblPriceTo);
+
+        txtPriceTo = new JTextField(7);
+        pricePanel.add(txtPriceTo);
+
+        advancedSearchPanel.add(pricePanel);
+
+        // Panel ngày
+        JPanel datePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        datePanel.setBackground(Color.WHITE);
+
+        JLabel lblDateFrom = new JLabel("Từ ngày:");
+        lblDateFrom.setPreferredSize(new Dimension(55, 25));
+        datePanel.add(lblDateFrom);
+
+        dateFrom = new JDateChooser();
+        dateFrom.setPreferredSize(new Dimension(95, 25));
+        dateFrom.setDateFormatString("dd/MM/yyyy");
+        datePanel.add(dateFrom);
+
+        JLabel lblDateTo = new JLabel("Đến ngày:");
+        lblDateTo.setPreferredSize(new Dimension(60, 25));
+        datePanel.add(lblDateTo);
+
+        dateTo = new JDateChooser();
+        dateTo.setPreferredSize(new Dimension(95, 25));
+        dateTo.setDateFormatString("dd/MM/yyyy");
+        datePanel.add(dateTo);
+
+        advancedSearchPanel.add(datePanel);
+
+        // Panel nút lọc
+        JPanel buttonFilterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        buttonFilterPanel.setBackground(Color.WHITE);
+
+        btnSearch = new JButton("LỌC");
+        btnSearch.setPreferredSize(new Dimension(80, 26));
+        btnSearch.addActionListener(e -> applyAdvancedFilter());
+        buttonFilterPanel.add(btnSearch);
+
+        advancedSearchPanel.add(buttonFilterPanel);
+
+        bottomPanel.add(advancedSearchPanel, BorderLayout.EAST);
+
+        // Add everything to the main toolbar
+        toolbar.add(topPanel, BorderLayout.NORTH);
+        toolbar.add(bottomPanel, BorderLayout.CENTER);
 
         // === Sự kiện nút ===
         btnXoa.addActionListener(e -> deleteHoaDon());
@@ -151,7 +300,7 @@ public class HoaDonPanel extends JPanel implements ItemListener, KeyListener {
 
     private void loadDataFromDAO() {
         try {
-            listHD = HoaDonDAO.selectAll(); // Lấy toàn bộ data từ database
+            listHD = HoaDonDAO.selectAll();
             loadDataToTable(listHD);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Lỗi tải dữ liệu: " + e.getMessage());
@@ -159,7 +308,7 @@ public class HoaDonPanel extends JPanel implements ItemListener, KeyListener {
     }
 
     private void loadDataToTable(List<HoaDonDTO> data) {
-        tableModel.setRowCount(0); // Xóa dữ liệu cũ
+        tableModel.setRowCount(0);
         for (HoaDonDTO hd : data) {
             tableModel.addRow(new Object[]{
                 hd.getMaHoaDon(),
@@ -225,6 +374,10 @@ public class HoaDonPanel extends JPanel implements ItemListener, KeyListener {
         txtSearch.setText("Nhập nội dung tìm kiếm...");
         txtSearch.setForeground(Color.GRAY);
         cbbFilter.setSelectedIndex(0);
+        dateFrom.setDate(null);
+        dateTo.setDate(null);
+        txtPriceFrom.setText("");
+        txtPriceTo.setText("");
     }
 
     private void filterData() {
@@ -232,14 +385,12 @@ public class HoaDonPanel extends JPanel implements ItemListener, KeyListener {
         if (searchText.equals("nhập nội dung tìm kiếm...")) {
             searchText = "";
         }
-
         String filterType = (String) cbbFilter.getSelectedItem();
         List<HoaDonDTO> filteredList = new ArrayList<>();
 
         for (HoaDonDTO hd : listHD) {
             boolean match = false;
             String maKM = hd.getMaSuKienKM() != null ? hd.getMaSuKienKM().toLowerCase() : "";
-
             switch (filterType) {
                 case "Mã HĐ":
                     match = hd.getMaHoaDon().toLowerCase().contains(searchText);
@@ -264,28 +415,13 @@ public class HoaDonPanel extends JPanel implements ItemListener, KeyListener {
                 filteredList.add(hd);
             }
         }
-
         loadDataToTable(filteredList);
     }
 
-    // ======= Implement interfaces ========
     @Override
     public void itemStateChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             filterData();
         }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        filterData();
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
     }
 }

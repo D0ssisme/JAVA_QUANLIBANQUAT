@@ -122,20 +122,23 @@ public class LoginFrame extends JFrame implements KeyListener {
 
     /**
      * Thực hiện xác thực với CSDL. Nếu đúng:
-     *   - Vai trò = Admin → mở AdminMainFrame
-     *   - Vai trò = NhanVien → mở EmployeeMainFrame(maNhanVien)
+     *  Vai trò = Admin → mở AdminMainFrame
+     *  Vai trò = QuanLy → mở ManagerMainFrame
+     *  Vai trò = NhanVien → mở EmployeeMainFrame(maNhanVien)
      */
     private void checkLogin() {
     String user = txtUsername.getText().trim();
     String pass = txtPassword.getPass().trim();
-
+    
+    //Kiểm tra dữ liệu đầu vào
     if (user.isEmpty() || pass.isEmpty()) {
         JOptionPane.showMessageDialog(this,
             "Vui lòng nhập đầy đủ thông tin",
             "Cảnh báo", JOptionPane.WARNING_MESSAGE);
         return;
     }
-
+    
+    //Truy vấn CSDL để xác thuc
     String sql = "SELECT * FROM taikhoan WHERE TenTaiKhoan = ? AND MatKhau = ?";
     try (Connection conn = DBConnection.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -146,13 +149,14 @@ public class LoginFrame extends JFrame implements KeyListener {
             if (rs.next()) {
                 String role   = rs.getString("VaiTro");
                 String maNV   = rs.getString("MaNhanVien"); // có thể null nếu admin
-
+                
+                //Chuyển hướng theo vai trò
                 if ("Admin".equalsIgnoreCase(role)) {
-                    // Admin‐only interface
+                    // chỉ có admin 
                     new AdminMainFrame().setVisible(true);
 
                 } else if ("QuanLy".equalsIgnoreCase(role)) {
-                
+                    // Quản lý
                     new ManagerMainFrame(maNV).setVisible(true);
 
                 } else {

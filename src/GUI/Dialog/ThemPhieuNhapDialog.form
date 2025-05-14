@@ -341,11 +341,6 @@
                 <Property name="text" type="java.lang.String" value="TH&#xca;M"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JButton" name="btn_editsanpham">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="S&#x1eec;A"/>
-              </Properties>
-            </Component>
             <Component class="javax.swing.JButton" name="btn_deletesanpham">
               <Properties>
                 <Property name="text" type="java.lang.String" value="X&#xd3;A"/>

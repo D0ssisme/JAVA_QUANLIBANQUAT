@@ -18,56 +18,78 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+/**
+ * Panel quản lý tài khoản - cho phép xem danh sách, thêm, sửa, xóa tài khoản người dùng
+ * Có 2 chế độ: 
+ * 1. Chế độ admin (khi isAdmin = true) - hiển thị nút đăng xuất thay vì xuất Excel
+ * 2. Chế độ quản lý thông thường
+ */
 public class TaiKhoanPanel extends JPanel {
-    private final TaiKhoanBUS bll = new TaiKhoanBUS();
-    private final DefaultTableModel model;
-    private final JTable tbl;
-    private final TableRowSorter<DefaultTableModel> sorter;
+    // Các thành phần dữ liệu
+    private final TaiKhoanBUS taiKhoanBUS = new TaiKhoanBUS();
+    private final DefaultTableModel modelBangDuLieu;
+    private final JTable bangDuLieu;
+    private final TableRowSorter<DefaultTableModel> boLocDuLieu;
 
-    private JComboBox<String> cbbFilter;
-    private JTextField txtSearch;
-    private JButton btnThem, btnSua, btnXoa, btnExcel, btnLamMoi, btnDangXuat;
+    // Các điều khiển giao diện
+    private JComboBox<String> cbbQuyenHang;
+    private JTextField txtTimKiem;
+    private JButton btnThem, btnSua, btnXoa, btnXuatExcel, btnLamMoi, btnDangXuat;
     
-    // Thêm biến để xác định panel được mở từ Admin hay không
-    private boolean isAdmin;
+    // Biến trạng thái
+    private boolean isAdmin; // True nếu panel được mở từ giao diện Admin
 
-    // Thêm tham số constructor để xác định panel được mở từ đâu
+    /**
+     * Constructor với tham số để xác định nguồn của panel
+     * @param isAdmin true nếu panel được mở từ giao diện Admin, ngược lại false
+     */
     public TaiKhoanPanel(boolean isAdmin) {
         this.isAdmin = isAdmin;
-        setLayout(new BorderLayout(10,10));
-        setBorder(new EmptyBorder(10,10,10,10));
+        
+        // Cài đặt layout
+        setLayout(new BorderLayout(10, 10));
+        setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // === Toolbar ===
-        JPanel toolbar = createButtonPanel();
-        add(toolbar, BorderLayout.NORTH);
+        // Tạo và thêm thanh công cụ
+        JPanel thanhCongCu = taoThanhCongCu();
+        add(thanhCongCu, BorderLayout.NORTH);
 
-        // === Table ===
-        model = new DefaultTableModel(
-            new Object[]{"Mã TK","Mã NV","Tên TK","Mật khẩu","Quyền hạng"}, 0
+        // Cài đặt bảng dữ liệu
+        modelBangDuLieu = new DefaultTableModel(
+            new Object[]{"Mã TK", "Mã NV", "Tên TK", "Mật khẩu", "Quyền hạng"}, 0
         ) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+            @Override public boolean isCellEditable(int r, int c) { return false; } // Không cho phép chỉnh sửa trực tiếp
         };
-        tbl = new JTable(model);
-        tbl.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        sorter = new TableRowSorter<>(model);
-        tbl.setRowSorter(sorter);
-        add(new JScrollPane(tbl), BorderLayout.CENTER);
+        
+        bangDuLieu = new JTable(modelBangDuLieu);
+        bangDuLieu.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // Chỉ chọn 1 dòng
+        
+        // Thêm bộ lọc và sắp xếp cho bảng
+        boLocDuLieu = new TableRowSorter<>(modelBangDuLieu);
+        bangDuLieu.setRowSorter(boLocDuLieu);
+        
+        // Thêm bảng vào panel với thanh cuộn
+        add(new JScrollPane(bangDuLieu), BorderLayout.CENTER);
 
-        // Load dữ liệu
-        reloadData();
+        // Nạp dữ liệu vào bảng
+        napDuLieuVaoBang();
     }
     
-    // Constructor mặc định (không có tham số) - cho tương thích với code cũ
+    /**
+     * Constructor mặc định - cho tương thích với code cũ
+     */
     public TaiKhoanPanel() {
         this(false); // Mặc định không phải Admin
     }
 
-    private JPanel createButtonPanel() {
-        // Tạo một panel chứa toàn bộ toolbar
-        JPanel toolbar = new JPanel();
-        toolbar.setLayout(new GridBagLayout()); // Sử dụng GridBagLayout để căn chỉnh chính xác
-        toolbar.setBackground(Color.WHITE);
-        toolbar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    /**
+     * Tạo thanh công cụ với các nút chức năng và bộ lọc
+     */
+    private JPanel taoThanhCongCu() {
+        // Panel chính cho thanh công cụ
+        JPanel thanh = new JPanel(new GridBagLayout());
+        thanh.setBackground(Color.WHITE);
+        thanh.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.NONE;
@@ -78,197 +100,266 @@ public class TaiKhoanPanel extends JPanel {
         gbc.gridy = 0;
         gbc.insets = new Insets(0, 0, 0, 5); // Khoảng cách giữa các nút
 
-        // Tạo các buttons với icons 
+        // ===== PHẦN 1: Các nút chức năng =====
+        
+        // Nút THÊM
         ImageIcon iconThem = new ImageIcon(getClass().getResource("/icon/them.png"));
         btnThem = new JButton("THÊM", iconThem);
         btnThem.setHorizontalTextPosition(SwingConstants.CENTER);
         btnThem.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnThem, gbc);
+        thanh.add(btnThem, gbc);
         
+        // Nút SỬA
         gbc.gridx = 1;
         ImageIcon iconSua = new ImageIcon(getClass().getResource("/icon/sua.png"));
         btnSua = new JButton("SỬA", iconSua);
         btnSua.setHorizontalTextPosition(SwingConstants.CENTER);
         btnSua.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnSua, gbc);
+        thanh.add(btnSua, gbc);
         
+        // Nút XÓA
         gbc.gridx = 2;
         ImageIcon iconXoa = new ImageIcon(getClass().getResource("/icon/xoa.png"));
         btnXoa = new JButton("XÓA", iconXoa);
         btnXoa.setHorizontalTextPosition(SwingConstants.CENTER);
         btnXoa.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnXoa, gbc);
+        thanh.add(btnXoa, gbc);
         
-        // Chỉ hiển thị nút XUẤT EXCEL nếu không phải Admin
+        // Nút thứ 4: XUẤT EXCEL hoặc ĐĂNG XUẤT (tùy chế độ)
+        gbc.gridx = 3;
         if (!isAdmin) {
-            gbc.gridx = 3;
+            // Nếu không phải Admin -> hiển thị nút XUẤT EXCEL
             ImageIcon iconExcel = new ImageIcon(getClass().getResource("/icon/xuatexcel.png"));
-            btnExcel = new JButton("XUẤT EXCEL", iconExcel);
-            btnExcel.setHorizontalTextPosition(SwingConstants.CENTER);
-            btnExcel.setVerticalTextPosition(SwingConstants.BOTTOM);
-            toolbar.add(btnExcel, gbc);
-        }
-        
-        // Thêm nút đăng xuất nếu chạy từ Admin
-        if (isAdmin) {
-            gbc.gridx = 3;
+            btnXuatExcel = new JButton("XUẤT EXCEL", iconExcel);
+            btnXuatExcel.setHorizontalTextPosition(SwingConstants.CENTER);
+            btnXuatExcel.setVerticalTextPosition(SwingConstants.BOTTOM);
+            thanh.add(btnXuatExcel, gbc);
+        } else {
+            // Nếu là Admin -> hiển thị nút ĐĂNG XUẤT
             ImageIcon iconLogout = new ImageIcon(getClass().getResource("/icon/logout.png"));
             btnDangXuat = new JButton("ĐĂNG XUẤT", iconLogout);
             btnDangXuat.setHorizontalTextPosition(SwingConstants.CENTER);
             btnDangXuat.setVerticalTextPosition(SwingConstants.BOTTOM);
-            toolbar.add(btnDangXuat, gbc);
+            thanh.add(btnDangXuat, gbc);
         }
         
-        // Phần tìm kiếm bên phải
+        // ===== PHẦN 2: Khoảng trống giữa các nút và phần tìm kiếm =====
         gbc.gridx = 4;
         gbc.weightx = 1.0; // Phần này sẽ chiếm khoảng trống còn lại
-        toolbar.add(Box.createHorizontalGlue(), gbc); // Tạo khoảng trống giữa các nút và phần tìm kiếm
+        thanh.add(Box.createHorizontalGlue(), gbc);
         
-        // Panel chứa các thành phần tìm kiếm
-        JPanel searchPanel = new JPanel();
-        searchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0)); // Căn phải, khoảng cách 5px
-        searchPanel.setOpaque(false);
+        // ===== PHẦN 3: Panel tìm kiếm và lọc =====
+        JPanel panelTimKiem = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        panelTimKiem.setOpaque(false);
         
-        // Thêm các thành phần vào panel tìm kiếm
-        JLabel lblFilter = new JLabel("Quyền hạng:");
-        cbbFilter = new JComboBox<>(new String[]{"Tất cả", "QuanLy", "NhanVien"});
-        cbbFilter.setPreferredSize(new Dimension(110, 25));
+        // Điều khiển lọc theo quyền hạng
+        JLabel lblQuyenHang = new JLabel("Quyền hạng:");
+        cbbQuyenHang = new JComboBox<>(new String[]{"Tất cả", "QuanLy", "NhanVien"});
+        cbbQuyenHang.setPreferredSize(new Dimension(110, 25));
         
-        JLabel lblSearch = new JLabel("Tìm kiếm:");
-        txtSearch = new JTextField();
-        txtSearch.setPreferredSize(new Dimension(180, 25));
+        // Điều khiển tìm kiếm
+        JLabel lblTimKiem = new JLabel("Tìm kiếm:");
+        txtTimKiem = new JTextField();
+        txtTimKiem.setPreferredSize(new Dimension(180, 25));
         
+        // Nút làm mới
         btnLamMoi = new JButton("LÀM MỚI");
         
-        searchPanel.add(lblFilter);
-        searchPanel.add(cbbFilter);
-        searchPanel.add(lblSearch);
-        searchPanel.add(txtSearch);
-        searchPanel.add(btnLamMoi);
+        // Thêm các điều khiển vào panel tìm kiếm
+        panelTimKiem.add(lblQuyenHang);
+        panelTimKiem.add(cbbQuyenHang);
+        panelTimKiem.add(lblTimKiem);
+        panelTimKiem.add(txtTimKiem);
+        panelTimKiem.add(btnLamMoi);
         
+        // Thêm panel tìm kiếm vào thanh công cụ
         gbc.gridx = 5;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.weightx = 0.0;
-        toolbar.add(searchPanel, gbc);
+        thanh.add(panelTimKiem, gbc);
         
-        // === Sự kiện nút ===
+        // ===== PHẦN 4: Gắn các sự kiện =====
+        
+        // Sự kiện nút THÊM
         btnThem.addActionListener(e -> {
-            ThemTaiKhoanDialog dlg = new ThemTaiKhoanDialog(
+            ThemTaiKhoanDialog hopThoai = new ThemTaiKhoanDialog(
                 SwingUtilities.getWindowAncestor(this)
             );
-            dlg.setVisible(true);
-            if (dlg.isSaved()) reloadData();
+            hopThoai.setVisible(true);
+            // Nếu người dùng đã lưu dữ liệu, nạp lại bảng
+            if (hopThoai.isSaved()) {
+                napDuLieuVaoBang();
+            }
         });
+        
+        // Sự kiện nút SỬA
         btnSua.addActionListener(e -> {
-            int row = tbl.getSelectedRow();
-            if (row < 0) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn tài khoản!",
-                                              "Lỗi", JOptionPane.ERROR_MESSAGE);
+            // Kiểm tra xem đã chọn dòng nào chưa
+            int dongDangChon = bangDuLieu.getSelectedRow();
+            if (dongDangChon < 0) {
+                JOptionPane.showMessageDialog(this, 
+                    "Vui lòng chọn tài khoản cần sửa!",
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            String maTK = model.getValueAt(
-                tbl.convertRowIndexToModel(row), 0).toString();
+            
+            // Lấy mã tài khoản từ dòng đã chọn
+            String maTK = modelBangDuLieu.getValueAt(
+                bangDuLieu.convertRowIndexToModel(dongDangChon), 0).toString();
+            
+            // Kiểm tra nếu là Admin (không cho phép sửa)
             if ("TK000".equals(maTK)) {
-                JOptionPane.showMessageDialog(this, "Không thể sửa Admin",
-                                              "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                    "Không thể sửa tài khoản Admin",
+                    "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            SuaTaiKhoanDialog dlg = new SuaTaiKhoanDialog(
+            
+            // Mở hộp thoại sửa tài khoản
+            SuaTaiKhoanDialog hopThoai = new SuaTaiKhoanDialog(
                 SwingUtilities.getWindowAncestor(this)
             );
-            dlg.loadForEdit(maTK);
-            dlg.setVisible(true);
-            if (dlg.isSaved()) reloadData();
+            hopThoai.loadForEdit(maTK); // Nạp dữ liệu tài khoản cần sửa
+            hopThoai.setVisible(true);
+            
+            // Nếu người dùng đã lưu, nạp lại bảng
+            if (hopThoai.isSaved()) {
+                napDuLieuVaoBang();
+            }
         });
+        
+        // Sự kiện nút XÓA
         btnXoa.addActionListener(e -> {
-            int row = tbl.getSelectedRow();
-            if (row < 0) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn tài khoản!",
-                                             "Lỗi", JOptionPane.ERROR_MESSAGE);
+            // Kiểm tra xem đã chọn dòng nào chưa
+            int dongDangChon = bangDuLieu.getSelectedRow();
+            if (dongDangChon < 0) {
+                JOptionPane.showMessageDialog(this, 
+                    "Vui lòng chọn tài khoản cần xóa!",
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            String maTK = model.getValueAt(
-                tbl.convertRowIndexToModel(row), 0).toString();
+            
+            // Lấy mã tài khoản từ dòng đã chọn
+            String maTK = modelBangDuLieu.getValueAt(
+                bangDuLieu.convertRowIndexToModel(dongDangChon), 0).toString();
+            
+            // Kiểm tra nếu là Admin (không cho phép xóa)
             if ("TK000".equals(maTK)) {
-                JOptionPane.showMessageDialog(this, "Không thể xóa Admin",
-                                             "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                    "Không thể xóa tài khoản Admin",
+                    "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            if (JOptionPane.showConfirmDialog(this,
-                 "Xóa tài khoản " + maTK + "?", "Xác nhận",
-                 JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                bll.xoa(maTK);
-                reloadData();
+            
+            // Hiển thị hộp thoại xác nhận xóa
+            int luaChon = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc chắn muốn xóa tài khoản " + maTK + "?", 
+                "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+                
+            // Nếu người dùng chọn Yes, tiến hành xóa
+            if (luaChon == JOptionPane.YES_OPTION) {
+                taiKhoanBUS.xoa(maTK);
+                napDuLieuVaoBang(); // Nạp lại bảng sau khi xóa
             }
         });
         
-        // Chỉ thêm sự kiện nút XUẤT EXCEL nếu không phải Admin
-        if (!isAdmin && btnExcel != null) {
-            btnExcel.addActionListener(e -> {
-                JOptionPane.showMessageDialog(this, "Chức năng xuất Excel đang phát triển");
+        // Gắn sự kiện tùy theo nút thứ 4
+        if (!isAdmin && btnXuatExcel != null) {
+            // Sự kiện nút xuất excel (chỉ cho chế độ không phải Admin)
+            btnXuatExcel.addActionListener(e -> {
+                JOptionPane.showMessageDialog(this, 
+                    "Chức năng xuất Excel đang được phát triển",
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             });
-        }
-        
-        // Thêm sự kiện cho nút đăng xuất nếu là Admin
-        if (isAdmin && btnDangXuat != null) {
+        } else if (isAdmin && btnDangXuat != null) {
+            // Sự kiện nút ĐĂNG XUẤT (chỉ cho chế độ Admin)
             btnDangXuat.addActionListener(e -> {
-                Window owner = SwingUtilities.getWindowAncestor(this);
-                owner.dispose();
+                // Đóng cửa sổ hiện tại
+                Window cauSo = SwingUtilities.getWindowAncestor(this);
+                cauSo.dispose();
+                
+                // Mở lại màn hình đăng nhập
                 new LoginFrame().setVisible(true);
             });
         }
         
+        // Sự kiện nút LÀM MỚI
         btnLamMoi.addActionListener(e -> {
-            txtSearch.setText("");
-            cbbFilter.setSelectedIndex(0);
-            sorter.setRowFilter(null);
+            // Xóa nội dung tìm kiếm và đặt lại bộ lọc
+            txtTimKiem.setText("");
+            cbbQuyenHang.setSelectedIndex(0);
+            boLocDuLieu.setRowFilter(null);
         });
 
-        // === Tìm kiếm + lọc ===
-        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { applyFilter(); }
-            public void removeUpdate(DocumentEvent e) { applyFilter(); }
-            public void changedUpdate(DocumentEvent e) { applyFilter(); }
+        // Thêm sự kiện lọc khi người dùng nhập vào ô tìm kiếm
+        txtTimKiem.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { apDungBoLoc(); }
+            public void removeUpdate(DocumentEvent e) { apDungBoLoc(); }
+            public void changedUpdate(DocumentEvent e) { apDungBoLoc(); }
         });
-        cbbFilter.addActionListener(e -> applyFilter());
         
-        return toolbar;
+        // Thêm sự kiện lọc khi người dùng chọn quyền hạng
+        cbbQuyenHang.addActionListener(e -> apDungBoLoc());
+        
+        return thanh;
     }
 
-    private void applyFilter() {
-        List<RowFilter<DefaultTableModel, Integer>> filters = new ArrayList<>();
-        // filter theo vai trò nếu không phải 'Tất cả'
-        String role = (String)cbbFilter.getSelectedItem();
-        if (!"Tất cả".equals(role)) {
-            filters.add(RowFilter.regexFilter(
-                "^" + Pattern.quote(role) + "$", 4));
+    /**
+     * Áp dụng bộ lọc cho bảng dựa trên giá trị tìm kiếm và quyền hạng đã chọn
+     */
+    private void apDungBoLoc() {
+        List<RowFilter<DefaultTableModel, Integer>> cacBoLoc = new ArrayList<>();
+        
+        // 1. Lọc theo quyền hạng nếu không phải "Tất cả"
+        String quyenHang = (String)cbbQuyenHang.getSelectedItem();
+        if (!"Tất cả".equals(quyenHang)) {
+            // Tạo bộ lọc chính xác cho cột quyền hạng (cột số 4)
+            RowFilter<DefaultTableModel, Integer> locQuyenHang = RowFilter.regexFilter(
+                "^" + Pattern.quote(quyenHang) + "$", 4);
+            cacBoLoc.add(locQuyenHang);
         }
-        // filter theo text
-        String text = txtSearch.getText().trim();
-        if (!text.isEmpty()) {
+        
+        // 2. Lọc theo nội dung tìm kiếm (tìm trong tất cả các cột)
+        String tuKhoa = txtTimKiem.getText().trim();
+        if (!tuKhoa.isEmpty()) {
             try {
-                filters.add(RowFilter.regexFilter("(?i)" + Pattern.quote(text)));
+                // Tạo bộ lọc chứa từ khóa (không phân biệt chữ hoa/thường)
+                RowFilter<DefaultTableModel, Integer> locTuKhoa = RowFilter.regexFilter(
+                    "(?i)" + Pattern.quote(tuKhoa));
+                cacBoLoc.add(locTuKhoa);
             } catch (PatternSyntaxException ex) {
-                // bỏ qua nếu không hợp lệ
+                // Bỏ qua nếu cú pháp regex không hợp lệ
             }
         }
         
-        if (filters.isEmpty()) {
-            sorter.setRowFilter(null);
+        // Áp dụng bộ lọc vào bảng
+        if (cacBoLoc.isEmpty()) {
+            // Nếu không có bộ lọc nào -> hiển thị tất cả
+            boLocDuLieu.setRowFilter(null);
         } else {
-            sorter.setRowFilter(RowFilter.andFilter(filters));
+            // Nếu có bộ lọc -> áp dụng tất cả các bộ lọc (AND)
+            boLocDuLieu.setRowFilter(RowFilter.andFilter(cacBoLoc));
         }
     }
 
-    private void reloadData() {
-        model.setRowCount(0);
-        for (TaiKhoanDTO t : bll.layTatCa()) {
-            model.addRow(new Object[]{
-                t.getMaTaiKhoan(),
-                t.getMaNhanVien(),
-                t.getUsername(),
-                t.getPassword(),
-                t.getVaiTro()
+    /**
+     * Nạp dữ liệu từ cơ sở dữ liệu vào bảng
+     */
+    private void napDuLieuVaoBang() {
+        // Xóa hết dữ liệu cũ
+        modelBangDuLieu.setRowCount(0);
+        
+        // Lấy danh sách tài khoản từ BUS
+        List<TaiKhoanDTO> danhSachTaiKhoan = taiKhoanBUS.layTatCa();
+        
+        // Thêm từng tài khoản vào bảng
+        for (TaiKhoanDTO taiKhoan : danhSachTaiKhoan) {
+            modelBangDuLieu.addRow(new Object[]{
+                taiKhoan.getMaTaiKhoan(),       // Cột 0: Mã tài khoản
+                taiKhoan.getMaNhanVien(),       // Cột 1: Mã nhân viên
+                taiKhoan.getUsername(),         // Cột 2: Tên đăng nhập
+                taiKhoan.getPassword(),         // Cột 3: Mật khẩu
+                taiKhoan.getVaiTro()            // Cột 4: Vai trò (quyền hạng)
             });
         }
     }

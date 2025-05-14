@@ -1,3 +1,4 @@
+
 package GUI.Panel;
 
 import BUS.NhanVienBUS;
@@ -13,43 +14,63 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 public class NhanVienPanel extends JPanel {
-    private final DefaultTableModel model;
-    private final JTable tbl;
-    private JComboBox<String> cbbFilter;
-    private JTextField txtSearch;
-    private final NhanVienBUS bll = new NhanVienBUS();
+    // Các thành phần dữ liệu
+    private final DefaultTableModel modelBangDuLieu;
+    private final JTable bangDuLieu;
+    private JComboBox<String> cbbBoLoc;
+    private JTextField txtTimKiem;
+    private final NhanVienBUS nhanVienBUS = new NhanVienBUS();
 
+    /**
+     * Khởi tạo panel quản lý nhân viên
+     */
     public NhanVienPanel() {
-        setLayout(new BorderLayout(10,10));
-        setBorder(new EmptyBorder(10,10,10,10));
+        // Thiết lập layout và viền
+        setLayout(new BorderLayout(10, 10));
+        setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // Tạo toolbar (thiết lập cbbFilter và txtSearch trong đó)
-        JPanel toolbar = createButtonPanel();
-        add(toolbar, BorderLayout.NORTH);
+        // Tạo thanh công cụ và thêm vào panel
+        JPanel thanhCongCu = taoThanhCongCu();
+        add(thanhCongCu, BorderLayout.NORTH);
 
-        // Tạo table model
-        model = new DefaultTableModel(
-            new Object[]{"Mã NV","Họ tên","Chức vụ","SĐT","Địa chỉ"}, 0
+        // Khởi tạo mô hình dữ liệu cho bảng với các cột
+        modelBangDuLieu = new DefaultTableModel(
+            new Object[]{"Mã NV", "Họ tên", "Chức vụ", "SĐT", "Địa chỉ"}, 0
         ) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+            /**
+             * Ghi đè phương thức để không cho phép chỉnh sửa trực tiếp trên bảng
+             */
+            @Override 
+            public boolean isCellEditable(int row, int column) { 
+                return false; 
+            }
         };
-        tbl = new JTable(model);
-        tbl.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        // Khởi tạo bảng với mô hình dữ liệu vừa tạo
+        bangDuLieu = new JTable(modelBangDuLieu);
+        bangDuLieu.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // Chỉ chọn 1 dòng
 
-        // Lần đầu load dữ liệu
-        reloadData();
+        // Nạp dữ liệu ban đầu vào bảng
+        napDuLieuVaoBang();
 
-        add(new JScrollPane(tbl), BorderLayout.CENTER);
+        // Thêm bảng vào panel với thanh cuộn
+        add(new JScrollPane(bangDuLieu), BorderLayout.CENTER);
     }
 
-    private JPanel createButtonPanel() {
-        // Tạo một panel chứa toàn bộ toolbar
-        JPanel toolbar = new JPanel();
-        toolbar.setLayout(new GridBagLayout()); // Sử dụng GridBagLayout 
-        toolbar.setBackground(Color.WHITE);
-        toolbar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    /**
+     * Tạo thanh công cụ với các nút chức năng và bộ lọc tìm kiếm
+     * @return Panel chứa các điều khiển
+     */
+    private JPanel taoThanhCongCu() {
+        // Tạo panel chính cho thanh công cụ
+        JPanel thanhCongCu = new JPanel();
+        thanhCongCu.setLayout(new GridBagLayout());
+        thanhCongCu.setBackground(Color.WHITE);
+        thanhCongCu.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
+        // Cấu hình GridBagConstraints để sắp xếp các thành phần
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
@@ -59,152 +80,230 @@ public class NhanVienPanel extends JPanel {
         gbc.gridy = 0;
         gbc.insets = new Insets(0, 0, 0, 5); // Khoảng cách giữa các nút
 
-        // Tạo các buttons với icons 
+        // ===== PHẦN 1: Các nút chức năng =====
+        
+        // Nút THÊM
         ImageIcon iconThem = new ImageIcon(getClass().getResource("/icon/them.png"));
         JButton btnThem = new JButton("THÊM", iconThem);
         btnThem.setHorizontalTextPosition(SwingConstants.CENTER);
         btnThem.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnThem, gbc);
+        thanhCongCu.add(btnThem, gbc);
         
+        // Nút SỬA
         gbc.gridx = 1;
         ImageIcon iconSua = new ImageIcon(getClass().getResource("/icon/sua.png"));
         JButton btnSua = new JButton("SỬA", iconSua);
         btnSua.setHorizontalTextPosition(SwingConstants.CENTER);
         btnSua.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnSua, gbc);
+        thanhCongCu.add(btnSua, gbc);
         
+        // Nút XÓA
         gbc.gridx = 2;
         ImageIcon iconXoa = new ImageIcon(getClass().getResource("/icon/xoa.png"));
         JButton btnXoa = new JButton("XÓA", iconXoa);
         btnXoa.setHorizontalTextPosition(SwingConstants.CENTER);
         btnXoa.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnXoa, gbc);
+        thanhCongCu.add(btnXoa, gbc);
         
+        // Nút XUẤT EXCEL
         gbc.gridx = 3;
         ImageIcon iconExcel = new ImageIcon(getClass().getResource("/icon/xuatexcel.png"));
         JButton btnExcel = new JButton("XUẤT EXCEL", iconExcel);
         btnExcel.setHorizontalTextPosition(SwingConstants.CENTER);
         btnExcel.setVerticalTextPosition(SwingConstants.BOTTOM);
-        toolbar.add(btnExcel, gbc);
+        thanhCongCu.add(btnExcel, gbc);
         
-        // Phần tìm kiếm bên phải
+        // ===== PHẦN 2: Khoảng trống giữa các nút và phần tìm kiếm =====
         gbc.gridx = 4;
         gbc.weightx = 1.0; // Phần này sẽ chiếm khoảng trống còn lại
-        toolbar.add(Box.createHorizontalGlue(), gbc); // Tạo khoảng trống giữa các nút và phần tìm kiếm
+        thanhCongCu.add(Box.createHorizontalGlue(), gbc);
         
-        // Panel chứa các thành phần tìm kiếm
-        JPanel searchPanel = new JPanel();
-        searchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0)); // Căn phải, khoảng cách 5px
-        searchPanel.setOpaque(false);
+        // ===== PHẦN 3: Panel tìm kiếm và lọc =====
+        JPanel panelTimKiem = new JPanel();
+        panelTimKiem.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        panelTimKiem.setOpaque(false);
         
-        // Thêm các thành phần vào panel tìm kiếm
-        JLabel lblFilter = new JLabel("Chức vụ:");
-        cbbFilter = new JComboBox<>(new String[]{"Tất cả", "Quản lý", "Nhân viên", "Bảo vệ"});
-        cbbFilter.setPreferredSize(new Dimension(110, 25));
+        // Điều khiển lọc theo chức vụ
+        JLabel lblBoLoc = new JLabel("Chức vụ:");
+        cbbBoLoc = new JComboBox<>(new String[]{"Tất cả", "Quản lý", "Nhân viên", "Bảo vệ"});
+        cbbBoLoc.setPreferredSize(new Dimension(110, 25));
         
-        JLabel lblSearch = new JLabel("Tìm kiếm:");
-        txtSearch = new JTextField();
-        txtSearch.setPreferredSize(new Dimension(180, 25));
+        // Điều khiển tìm kiếm
+        JLabel lblTimKiem = new JLabel("Tìm kiếm:");
+        txtTimKiem = new JTextField();
+        txtTimKiem.setPreferredSize(new Dimension(180, 25));
         
+        // Nút làm mới
         JButton btnLamMoi = new JButton("LÀM MỚI");
         
-        searchPanel.add(lblFilter);
-        searchPanel.add(cbbFilter);
-        searchPanel.add(lblSearch);
-        searchPanel.add(txtSearch);
-        searchPanel.add(btnLamMoi);
+        // Thêm các điều khiển vào panel tìm kiếm
+        panelTimKiem.add(lblBoLoc);
+        panelTimKiem.add(cbbBoLoc);
+        panelTimKiem.add(lblTimKiem);
+        panelTimKiem.add(txtTimKiem);
+        panelTimKiem.add(btnLamMoi);
         
+        // Thêm panel tìm kiếm vào thanh công cụ
         gbc.gridx = 5;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.weightx = 0.0;
-        toolbar.add(searchPanel, gbc);
+        thanhCongCu.add(panelTimKiem, gbc);
         
-        // Thêm sự kiện cho các nút
+        // ===== PHẦN 4: Gắn các sự kiện =====
+        
+        // Sự kiện nút THÊM
         btnThem.addActionListener(e -> {
-            ThemNhanVienDialog dlg = new ThemNhanVienDialog(
+            // Mở hộp thoại thêm nhân viên mới
+            ThemNhanVienDialog hopThoai = new ThemNhanVienDialog(
                 SwingUtilities.getWindowAncestor(this)
             );
-            dlg.setVisible(true);
-            if (dlg.isSaved()) reloadData();
+            hopThoai.setVisible(true);
+            
+            // Nếu người dùng đã lưu, cập nhật lại bảng
+            if (hopThoai.isSaved()) {
+                napDuLieuVaoBang();
+            }
         });
 
+        // Sự kiện nút SỬA
         btnSua.addActionListener(e -> {
-            int r = tbl.getSelectedRow();
-            if (r < 0) {
+            // Kiểm tra xem đã chọn nhân viên nào chưa
+            int dongDangChon = bangDuLieu.getSelectedRow();
+            if (dongDangChon < 0) {
                 JOptionPane.showMessageDialog(this,
-                    "Chọn một nhân viên để chỉnh sửa",
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    "Vui lòng chọn một nhân viên để chỉnh sửa",
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            String maNV = model.getValueAt(r,0).toString();
-            SuaNhanVienDialog dlg = new SuaNhanVienDialog(
+            
+            // Lấy mã nhân viên của dòng đã chọn
+            String maNV = modelBangDuLieu.getValueAt(dongDangChon, 0).toString();
+            
+            // Mở hộp thoại sửa thông tin nhân viên
+            SuaNhanVienDialog hopThoai = new SuaNhanVienDialog(
                 SwingUtilities.getWindowAncestor(this), maNV
             );
-            dlg.setVisible(true);
-            if (dlg.isSaved()) reloadData();
+            hopThoai.setVisible(true);
+            
+            // Nếu người dùng đã lưu, cập nhật lại bảng
+            if (hopThoai.isSaved()) {
+                napDuLieuVaoBang();
+            }
         });
 
+        // Sự kiện nút XÓA - ĐÃ SỬA
         btnXoa.addActionListener(e -> {
-            int r = tbl.getSelectedRow();
-            if (r < 0) {
+            // Kiểm tra xem đã chọn nhân viên nào chưa
+            int dongDangChon = bangDuLieu.getSelectedRow();
+            if (dongDangChon < 0) {
                 JOptionPane.showMessageDialog(this,
-                    "Chọn một nhân viên để xóa",
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    "Vui lòng chọn một nhân viên để xóa",
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            if (JOptionPane.showConfirmDialog(this,
-                "Xóa nhân viên này?") == JOptionPane.YES_OPTION) {
-                String maNV = model.getValueAt(r,0).toString();
-                bll.xoa(maNV);
-                reloadData();
+            
+            // Lấy mã nhân viên của dòng đã chọn
+            String maNV = modelBangDuLieu.getValueAt(dongDangChon, 0).toString();
+            
+            // Thực hiện xóa nhân viên - phương thức trả về false nếu:
+            // 1. Có lỗi xảy ra trong quá trình xóa
+            // 2. Người dùng hủy thao tác khi có xác nhận
+            boolean ketQua = nhanVienBUS.xoa(maNV);
+            
+            // Chỉ hiển thị thông báo và cập nhật bảng khi XÓA THÀNH CÔNG
+            if (ketQua) {
+                JOptionPane.showMessageDialog(this,
+                    "Đã xóa nhân viên thành công",
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                napDuLieuVaoBang(); // Cập nhật lại bảng
             }
+            // KHÔNG hiển thị thông báo lỗi ở đây nữa
         });
 
-        // Kịch bản lọc & tìm kiếm
-        ActionListener doFilter = e -> reloadData();
-        cbbFilter.addActionListener(doFilter);
-        txtSearch.addActionListener(doFilter);
+        // Sự kiện nút XUẤT EXCEL
+        btnExcel.addActionListener(e -> {
+            JOptionPane.showMessageDialog(this,
+                "Chức năng xuất Excel đang được phát triển",
+                "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        });
         
+        // Thêm sự kiện lọc và tìm kiếm
+        ActionListener suKienTimKiem = e -> apDungLocVaTimKiem();
+        cbbBoLoc.addActionListener(suKienTimKiem);
+        txtTimKiem.addActionListener(suKienTimKiem);
+        
+        // Sự kiện nút LÀM MỚI
         btnLamMoi.addActionListener(e -> {
-            cbbFilter.setSelectedIndex(0);
-            txtSearch.setText("");
-            reloadData();
+            // Đặt lại giá trị mặc định cho các điều khiển
+            cbbBoLoc.setSelectedIndex(0);
+            txtTimKiem.setText("");
+            // Nạp lại toàn bộ dữ liệu
+            napDuLieuVaoBang();
         });
 
-        return toolbar;
+        return thanhCongCu;
+    }
+    
+    /**
+     * Áp dụng bộ lọc và tìm kiếm dựa trên các tiêu chí người dùng đã chọn
+     */
+    private void apDungLocVaTimKiem() {
+        // Lấy danh sách tất cả nhân viên
+        List<NhanVienDTO> danhSachNhanVien = nhanVienBUS.layTatCa();
+
+        // 1) Lọc theo chức vụ nếu không phải "Tất cả"
+        String chucVu = (String)cbbBoLoc.getSelectedItem();
+        if (!"Tất cả".equals(chucVu)) {
+            // Sử dụng Stream API để lọc nhân viên theo chức vụ
+            danhSachNhanVien = danhSachNhanVien.stream()
+                     .filter(nv -> nv.getChucVu().equalsIgnoreCase(chucVu))
+                     .collect(Collectors.toList());
+        }
+
+        // 2) Tìm kiếm theo mã hoặc họ tên (nếu có nhập từ khóa)
+        String tuKhoa = txtTimKiem.getText().trim().toLowerCase();
+        if (!tuKhoa.isEmpty()) {
+            // Sử dụng Stream API để lọc nhân viên theo từ khóa
+            danhSachNhanVien = danhSachNhanVien.stream()
+                     .filter(nv -> 
+                         nv.getMaNV().toLowerCase().contains(tuKhoa) || 
+                         nv.getHoTen().toLowerCase().contains(tuKhoa)
+                     )
+                     .collect(Collectors.toList());
+        }
+
+        // Cập nhật bảng với kết quả đã lọc
+        capNhatBangVoiKetQua(danhSachNhanVien);
     }
 
-    // Các phương thức khác giữ nguyên
-    private void reloadData() {
-        List<NhanVienDTO> all = bll.layTatCa();
-
-        // 1) Lọc theo chức vụ
-        String cv = (String)cbbFilter.getSelectedItem();
-        if (!"Tất cả".equals(cv)) {
-            all = all.stream()
-                     .filter(n -> n.getChucVu().equalsIgnoreCase(cv))
-                     .collect(Collectors.toList());
-        }
-
-        // 2) Tìm kiếm theo mã hoặc họ tên
-        String kw = txtSearch.getText().trim().toLowerCase();
-        if (!kw.isEmpty()) {
-            all = all.stream()
-                     .filter(n -> n.getMaNV().toLowerCase().contains(kw)
-                               || n.getHoTen().toLowerCase().contains(kw))
-                     .collect(Collectors.toList());
-        }
-
-        // Đổ lên bảng
-        model.setRowCount(0);
-        for (NhanVienDTO n : all) {
-            model.addRow(new Object[]{
-                n.getMaNV(),
-                n.getHoTen(),
-                n.getChucVu(),
-                n.getSdt(),
-                n.getDiaChi()
+    /**
+     * Cập nhật bảng với danh sách nhân viên đã lọc
+     * @param danhSach Danh sách nhân viên cần hiển thị
+     */
+    private void capNhatBangVoiKetQua(List<NhanVienDTO> danhSach) {
+        // Xóa dữ liệu cũ trong bảng
+        modelBangDuLieu.setRowCount(0);
+        
+        // Thêm từng nhân viên vào bảng
+        for (NhanVienDTO nv : danhSach) {
+            modelBangDuLieu.addRow(new Object[]{
+                nv.getMaNV(),      // Cột 0: Mã nhân viên
+                nv.getHoTen(),     // Cột 1: Họ tên
+                nv.getChucVu(),    // Cột 2: Chức vụ
+                nv.getSdt(),       // Cột 3: Số điện thoại
+                nv.getDiaChi()     // Cột 4: Địa chỉ
             });
         }
+    }
+
+    /**
+     * Nạp lại toàn bộ dữ liệu vào bảng từ cơ sở dữ liệu
+     */
+    private void napDuLieuVaoBang() {
+        // Lấy toàn bộ danh sách nhân viên
+        List<NhanVienDTO> danhSach = nhanVienBUS.layTatCa();
+        
+        // Cập nhật bảng với danh sách đầy đủ
+        capNhatBangVoiKetQua(danhSach);
     }
 }

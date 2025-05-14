@@ -1,6 +1,5 @@
 package GUI.Panel;
 import GUI.Dialog.ThemQuatDialog;
-import DTO.DBConnection;
 import BUS.QuatBUS;
 import DAO.LoaiSanPhamDAO;
 import DTO.LoaiSanPhamDTO;
@@ -15,7 +14,6 @@ import GUI.Dialog.ExcelQuatDialog;
 import java.awt.Font;
 import java.awt.Color;
 import GUI.Dialog.SuaQuatDialog;
-import helper.XuatExcel;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -206,7 +204,7 @@ public class QuatPanel extends JPanel {
              txtGiaDen.setText("");
              TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
              if (sorter != null) {
-                 sorter.setRowFilter(null); // Tắt bộ lọc
+                 sorter.setRowFilter(null); 
              }
 
              loadDataFromDatabase(); 
@@ -410,7 +408,6 @@ private void filterData(JTextField txtSearch, JComboBox<String> cbbFilter, JComb
         tableQuat.setRowCount(0);
         loadLoaiMap(); 
         List<QuatDTO> danhSachQuat = quatBUS.layTatCa();
-        System.out.println("Số lượng quạt lấy được: " + danhSachQuat.size());
         for (QuatDTO quat : danhSachQuat) {
             tableQuat.addRow(new Object[] {
                 quat.getMaQuat(),

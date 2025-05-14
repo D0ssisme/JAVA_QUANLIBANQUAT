@@ -1,3 +1,4 @@
+
 package GUI.Component;
 
 import GUI.Panel.ThongKe.ThongKePanel;
@@ -13,12 +14,23 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Menu chức năng hiển thị bên trái màn hình chính
+ * Hiển thị các chức năng khác nhau tùy theo vai trò người dùng (Admin, Quản lý, Nhân viên)
+ */
 public class MenuTaskbar extends JPanel {
 
-    private final JFrame parent;
-    private final boolean isManager;
-    private final String maNhanVien;
+    private final JFrame parent;           // Frame cha chứa menu này
+    private final boolean isManager;       // Cờ xác định có phải quản lý hay không
+    private final String maNhanVien;       // Mã nhân viên đang đăng nhập
 
+    /**
+     * Constructor đầy đủ - khởi tạo menu với thông tin người dùng
+     * 
+     * @param parent Frame cha chứa menu
+     * @param isManager true: hiển thị menu cho quản lý, false: hiển thị menu cho nhân viên
+     * @param maNhanVien Mã nhân viên đang đăng nhập, null nếu là Admin
+     */
     public MenuTaskbar(JFrame parent, boolean isManager, String maNhanVien) {
         this.parent = parent;
         this.isManager = isManager;
@@ -26,19 +38,29 @@ public class MenuTaskbar extends JPanel {
         initComponent();
     }
     
-    // Constructor original para mantener compatibilidad
+    /**
+     * Constructor tương thích với mã cũ - không sử dụng mã nhân viên
+     * 
+     * @param parent Frame cha chứa menu
+     * @param isManager true: hiển thị menu cho quản lý, false: hiển thị menu cho nhân viên
+     */
     public MenuTaskbar(JFrame parent, boolean isManager) {
         this(parent, isManager, null);
     }
 
+    /**
+     * Khởi tạo các thành phần giao diện của menu
+     * Hiển thị các nút chức năng phù hợp với vai trò người dùng
+     */
     private void initComponent() {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
+        // Panel chứa các mục menu theo chiều dọc
         JPanel menu = new JPanel(new GridLayout(0, 1, 0, 5));
         menu.setBackground(Color.WHITE);
 
-        // Tải icon
+        // Tải các icon cho các chức năng
         ImageIcon homeIcon = new ImageIcon(getClass().getResource("/icon/trangchu.png"));
         ImageIcon sellIcon = new ImageIcon(getClass().getResource("/icon/ban.png"));
         ImageIcon quatIcon = new ImageIcon(getClass().getResource("/icon/fan.png"));
@@ -54,17 +76,22 @@ public class MenuTaskbar extends JPanel {
         ImageIcon logoutIcon = new ImageIcon(getClass().getResource("/icon/logout.png"));
         ImageIcon loaispIcon = new ImageIcon(getClass().getResource("/icon/loaisp.png"));
 
-
+        /**
+         * Thêm các nút chức năng cơ bản cho mọi vai trò
+         */
         
+        // Chức năng bán quạt
         addButton(menu, "Bán quạt", sellIcon, e -> {
             String maNV = null;
 
+            // Lấy mã nhân viên từ frame cha phù hợp
             if (parent instanceof EmployeeMainFrame) {
                 maNV = ((EmployeeMainFrame) parent).getMaNhanVien();
             } else if (parent instanceof ManagerMainFrame) {
                 maNV = ((ManagerMainFrame) parent).getMaNhanVien();
             }
 
+            // Mở panel bán quạt nếu có mã nhân viên
             if (maNV != null) {
                 swap(new BanQuatPanel(maNV));
             } else {
@@ -72,6 +99,7 @@ public class MenuTaskbar extends JPanel {
             }
         });
 
+        // Chức năng quản lý quạt
         addButton(menu, "Quản lý quạt", quatIcon, e -> {
             try {
                 swap(new QuatPanel());
@@ -79,26 +107,49 @@ public class MenuTaskbar extends JPanel {
                 Logger.getLogger(MenuTaskbar.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
+        
+        // Chức năng quản lý hóa đơn
         addButton(menu, "Hóa đơn", billIcon, e -> swap(new HoaDonPanel()));
+        
+        // Chức năng quản lý phiếu nhập
         addButton(menu, "Phiếu nhập", importIcon, e -> swap(new PhieuNhapPanel(this.maNhanVien)));
+        
+        // Chức năng quản lý loại sản phẩm
         addButton(menu, "Loại sản phẩm", loaispIcon, e -> swap(new LoaiSanPhamPanel()));
 
-        // Chức năng riêng cho quản lý
+        /**
+         * Các chức năng riêng cho quản lý
+         */
         if (isManager) {
+            // Quản lý khuyến mãi
             addButton(menu, "Khuyến mãi", promotionIcon, e -> swap(new KhuyenMaiPanel()));
+            
+            // Quản lý khách hàng
             addButton(menu, "Khách hàng", customerIcon, e -> swap(new KhachHangPanel()));
+            
+            // Quản lý nhà cung cấp
             addButton(menu, "Nhà cung cấp", supplierIcon, e -> swap(new NhaCungCapPanel()));
+            
+            // Quản lý nhân viên
             addButton(menu, "Nhân viên", staffIcon, e -> swap(new NhanVienPanel()));
+            
+            // Quản lý tài khoản
             addButton(menu, "Tài khoản", accountIcon, e -> swap(new TaiKhoanPanel(false))); //mặc định mở từ manager
+            
+            // Thống kê báo cáo
             addButton(menu, "Thống kê", statisticIcon, e -> swap(new ThongKePanel()));
         }
         
-        // Thêm chức năng xem thông tin cá nhân - dùng icon giống tài khoản
+        /**
+         * Thêm chức năng xem thông tin cá nhân nếu đang đăng nhập bằng tài khoản nhân viên
+         */
         if (maNhanVien != null) {
             addButton(menu, "Thông tin cá nhân", accountIcon, e -> swap(new ThongTinCaNhanPanel(maNhanVien)));
         }
 
-        // Nút đăng xuất
+        /**
+         * Nút đăng xuất - luôn hiển thị ở cuối menu cho mọi vai trò
+         */
         JButton btnLogout = new JButton("Đăng xuất", logoutIcon);
         btnLogout.setHorizontalAlignment(SwingConstants.LEFT);
         btnLogout.setForeground(Color.RED);
@@ -108,8 +159,10 @@ public class MenuTaskbar extends JPanel {
         });
         menu.add(btnLogout);
 
+        // Thêm menu vào panel chính
         add(menu, BorderLayout.CENTER);
 
+        // Thiết lập font cho tất cả các nút
         for (Component comp : menu.getComponents()) {
             if (comp instanceof JButton) {
                 comp.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -117,7 +170,13 @@ public class MenuTaskbar extends JPanel {
         }
     }
 
-    // Phiên bản không có icon
+    /**
+     * Thêm nút menu không có icon
+     * 
+     * @param menu Panel chứa các nút menu
+     * @param text Văn bản hiển thị trên nút
+     * @param action Hành động khi nhấn nút
+     */
     private void addButton(JPanel menu, String text, ActionListener action) {
         JButton btn = new JButton(text);
         btn.setHorizontalAlignment(SwingConstants.LEFT);
@@ -125,7 +184,14 @@ public class MenuTaskbar extends JPanel {
         menu.add(btn);
     }
 
-    // Phiên bản thêm icon
+    /**
+     * Thêm nút menu có icon
+     * 
+     * @param menu Panel chứa các nút menu
+     * @param text Văn bản hiển thị trên nút
+     * @param icon Icon hiển thị trên nút
+     * @param action Hành động khi nhấn nút
+     */
     private void addButton(JPanel menu, String text, Icon icon, ActionListener action) {
         JButton btn = new JButton(text, icon);
         btn.setHorizontalAlignment(SwingConstants.LEFT);
@@ -133,6 +199,11 @@ public class MenuTaskbar extends JPanel {
         menu.add(btn);
     }
 
+    /**
+     * Chuyển đổi panel hiển thị trong frame cha
+     * 
+     * @param panel Panel mới cần hiển thị
+     */
     private void swap(JPanel panel) {
         if (parent instanceof ManagerMainFrame) {
             ((ManagerMainFrame) parent).setPanel(panel);

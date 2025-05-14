@@ -5,6 +5,7 @@ import BUS.KhachHangBUS;
 import DAO.KhachHangDAO;
 import javax.swing.*;
 import java.awt.*;
+import java.util.regex.Pattern;
 
 public class ThemKhachHangDialog extends JDialog {
     private KhachHangBUS kh_bus = new KhachHangBUS();
@@ -69,12 +70,18 @@ public class ThemKhachHangDialog extends JDialog {
             // Kiểm tra SĐT
             if (sdtNhap.isEmpty()) {
                 JOptionPane.showMessageDialog(this,
-                    "Vui lòng nhập số điện thoại!", "Lỗi", JOptionPane.WARNING_MESSAGE);
+                    "Số điện thoại không được để trống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                txtSdt.requestFocus();
                 return;
             }
-            if (!sdtNhap.matches("\\d+")) {
-                JOptionPane.showMessageDialog(this,
-                    "SĐT chỉ được chứa chữ số!", "Lỗi", JOptionPane.WARNING_MESSAGE);
+            
+            // Kiểm tra định dạng số điện thoại (10 số, bắt đầu bằng 0)
+            Pattern pattern = Pattern.compile("^0\\d{9}$");
+            if (!pattern.matcher(sdtNhap).matches()) {
+                JOptionPane.showMessageDialog(this, 
+                    "Số điện thoại phải có 10 số và bắt đầu bằng số 0!", 
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+                txtSdt.requestFocus();
                 return;
             }
             

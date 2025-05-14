@@ -14,7 +14,6 @@ import javax.swing.JOptionPane;
 public class QuatBUS {
     private final QuatDAO dao = new QuatDAO();
 
-    // Lấy tất cả các quạt
     public List<QuatDTO> layTatCa() {
         try {
             return dao.getAll();
@@ -24,7 +23,6 @@ public class QuatBUS {
         }
     }
 
-    // Chuyển đổi định dạng ngày
     private String convertDateFormat(String inputDate) {
         SimpleDateFormat inputFormat = new SimpleDateFormat("dd-MM-yyyy");
         SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -77,8 +75,6 @@ public class QuatBUS {
             return null;
         }
     }
-
-    // Tìm kiếm gần đúng theo tên quạt
     public List<QuatDTO> timTheoTenQuat(String keyword) {
         try {
             return dao.findByTenQuat(keyword);
@@ -87,8 +83,6 @@ public class QuatBUS {
             return List.of();
         }
     }
-
-    // Tìm kiếm gần đúng theo thương hiệu
     public List<QuatDTO> timTheoThuongHieu(String keyword) {
         try {
             return dao.findByThuongHieu(keyword);

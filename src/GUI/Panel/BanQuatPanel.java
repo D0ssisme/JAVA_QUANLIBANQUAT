@@ -48,7 +48,7 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
     private JComboBox<String> cbbKhachHang, cbbKhuyenMai;
     private JComboBox<QuatComboItem> cbbSanPham;
     private JCheckBox chkApDungKM;
-    private JButton btnThemSP, btnThanhToan, btnXuatPDF, btnHuy;
+    private JButton btnThemSP, btnThanhToan, btnHuy;
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField txtTong;
@@ -206,9 +206,6 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
         btnThanhToan = new JButton("Thanh toán");
         btnThanhToan.addActionListener(this);
         south.add(btnThanhToan);
-        btnXuatPDF = new JButton("Xuất PDF");
-        btnXuatPDF.addActionListener(this);
-        south.add(btnXuatPDF);
         btnHuy = new JButton("Xóa");
         btnHuy.addActionListener(this);
         south.add(btnHuy);
@@ -229,8 +226,6 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
             updateTotal();
         } else if (src == btnThanhToan) {
             processPayment();
-        } else if (src == btnXuatPDF) {
-            JOptionPane.showMessageDialog(this, "Chức năng đang phát triển.");
         } else if (src == btnHuy) {
             tableModel.setRowCount(0);
             updateTotal();
@@ -260,8 +255,6 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
             showError(ex);
         }
     }
-
-// Custom class to hold quạt information for the combobox
     private static class QuatComboItem {
 
         private String maQuat;
@@ -314,7 +307,6 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
                     setToolTipText(null);
                 }
             }
-
             return c;
         }
     }
@@ -399,7 +391,6 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
         }
         txtTong.setText(String.valueOf(sum));
         btnThanhToan.setEnabled(tableModel.getRowCount() > 0);
-        btnXuatPDF.setEnabled(tableModel.getRowCount() > 0);
     }
 
     private void processPayment() {

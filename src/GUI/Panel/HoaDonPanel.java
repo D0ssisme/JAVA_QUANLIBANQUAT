@@ -129,35 +129,31 @@ public class HoaDonPanel extends JPanel implements ItemListener {
     }
 
     private JPanel createButtonPanel() {
-        // Tạo một panel chứa toàn bộ toolbar
-        JPanel toolbar = new JPanel();
-        toolbar.setLayout(new BorderLayout(0, 5)); // Giảm khoảng cách dọc
+        // Tạo panel chính cho toolbar
+        JPanel toolbar = new JPanel(new BorderLayout(0, 5));
         toolbar.setBackground(Color.WHITE);
         toolbar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // Panel trên chứa các buttons và search cơ bản
+        // Panel trên cho các nút và tìm kiếm cơ bản
         JPanel topPanel = new JPanel(new BorderLayout(5, 0));
         topPanel.setBackground(Color.WHITE);
 
-        // Panel chứa các nút chức năng
+        // Panel cho các nút chức năng
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         buttonPanel.setBackground(Color.WHITE);
 
-        // Button "Xóa" with icon
         ImageIcon iconXoa = new ImageIcon(getClass().getResource("/icon/xoa.png"));
         btnXoa = new JButton("XÓA", iconXoa);
         btnXoa.setHorizontalTextPosition(SwingConstants.CENTER);
         btnXoa.setVerticalTextPosition(SwingConstants.BOTTOM);
         buttonPanel.add(btnXoa);
 
-        // Button "Chi tiết" with icon
         ImageIcon iconChiTiet = new ImageIcon(getClass().getResource("/icon/chitiet.png"));
         btnChiTiet = new JButton("CHI TIẾT", iconChiTiet);
         btnChiTiet.setHorizontalTextPosition(SwingConstants.CENTER);
         btnChiTiet.setVerticalTextPosition(SwingConstants.BOTTOM);
         buttonPanel.add(btnChiTiet);
 
-        // Button "Xuất Excel" with icon
         ImageIcon iconExcel = new ImageIcon(getClass().getResource("/icon/xuatexcel.png"));
         btnExcel = new JButton("XUẤT EXCEL", iconExcel);
         btnExcel.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -166,9 +162,8 @@ public class HoaDonPanel extends JPanel implements ItemListener {
 
         topPanel.add(buttonPanel, BorderLayout.WEST);
 
-        // SearchPanel - Cải tiến giao diện tìm kiếm
-        JPanel searchPanel = new JPanel();
-        searchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        // Panel cho tìm kiếm cơ bản
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
         searchPanel.setBackground(Color.WHITE);
 
         JLabel lblFilter = new JLabel("Lọc:");
@@ -190,83 +185,66 @@ public class HoaDonPanel extends JPanel implements ItemListener {
 
         topPanel.add(searchPanel, BorderLayout.EAST);
 
-        // Panel dưới chứa tìm kiếm nâng cao - Cải tiến bố cục
-        JPanel bottomPanel = new JPanel(new BorderLayout(0, 0));
+        // Panel dưới cho tìm kiếm nâng cao
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
         bottomPanel.setBackground(Color.WHITE);
-        bottomPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
+        bottomPanel.setBorder(BorderFactory.createTitledBorder("Tìm kiếm nâng cao"));
 
-        // Panel bên trái (trống, để căn chỉnh)
-        JPanel leftPlaceholder = new JPanel();
-        leftPlaceholder.setBackground(Color.WHITE);
-        leftPlaceholder.setPreferredSize(buttonPanel.getPreferredSize());
-        bottomPanel.add(leftPlaceholder, BorderLayout.WEST);
+        // Thêm khoảng trống bên trái để căn chỉnh với tìm kiếm cơ bản
+        bottomPanel.add(Box.createHorizontalStrut(150)); // Điều chỉnh giá trị này để thẳng hàng với txtSearch
 
-        // Panel tìm kiếm nâng cao - căn chỉnh giống phần search ở trên
-        JPanel advancedSearchPanel = new JPanel();
-        advancedSearchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0));
-        advancedSearchPanel.setBackground(Color.WHITE);
-
-        // Panel giá
-        JPanel pricePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        pricePanel.setBackground(Color.WHITE);
+        // Tìm kiếm theo giá
         JLabel lblPriceFrom = new JLabel("Giá từ:");
-        lblPriceFrom.setPreferredSize(new Dimension(45, 25));
-        pricePanel.add(lblPriceFrom);
+        lblPriceFrom.setPreferredSize(new Dimension(60, 25));
+        bottomPanel.add(lblPriceFrom);
 
-        txtPriceFrom = new JTextField(7);
-        pricePanel.add(txtPriceFrom);
+        txtPriceFrom = new JTextField(10);
+        txtPriceFrom.setPreferredSize(new Dimension(100, 25));
+        bottomPanel.add(txtPriceFrom);
 
         JLabel lblPriceTo = new JLabel("đến:");
-        lblPriceTo.setPreferredSize(new Dimension(30, 25));
-        pricePanel.add(lblPriceTo);
+        lblPriceTo.setPreferredSize(new Dimension(40, 25));
+        bottomPanel.add(lblPriceTo);
 
-        txtPriceTo = new JTextField(7);
-        pricePanel.add(txtPriceTo);
+        txtPriceTo = new JTextField(10);
+        txtPriceTo.setPreferredSize(new Dimension(100, 25));
+        bottomPanel.add(txtPriceTo);
 
-        advancedSearchPanel.add(pricePanel);
+        bottomPanel.add(Box.createHorizontalStrut(10)); // Khoảng cách giữa giá và ngày
 
-        // Panel ngày
-        JPanel datePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        datePanel.setBackground(Color.WHITE);
-
+        // Tìm kiếm theo ngày
         JLabel lblDateFrom = new JLabel("Từ ngày:");
-        lblDateFrom.setPreferredSize(new Dimension(55, 25));
-        datePanel.add(lblDateFrom);
+        lblDateFrom.setPreferredSize(new Dimension(60, 25));
+        bottomPanel.add(lblDateFrom);
 
         dateFrom = new JDateChooser();
-        dateFrom.setPreferredSize(new Dimension(95, 25));
+        dateFrom.setPreferredSize(new Dimension(100, 25));
         dateFrom.setDateFormatString("dd/MM/yyyy");
-        datePanel.add(dateFrom);
+        bottomPanel.add(dateFrom);
 
         JLabel lblDateTo = new JLabel("Đến ngày:");
         lblDateTo.setPreferredSize(new Dimension(60, 25));
-        datePanel.add(lblDateTo);
+        bottomPanel.add(lblDateTo);
 
         dateTo = new JDateChooser();
-        dateTo.setPreferredSize(new Dimension(95, 25));
+        dateTo.setPreferredSize(new Dimension(100, 25));
         dateTo.setDateFormatString("dd/MM/yyyy");
-        datePanel.add(dateTo);
+        bottomPanel.add(dateTo);
 
-        advancedSearchPanel.add(datePanel);
+        bottomPanel.add(Box.createHorizontalStrut(10)); // Khoảng cách trước nút LỌC
 
-        // Panel nút lọc
-        JPanel buttonFilterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        buttonFilterPanel.setBackground(Color.WHITE);
-
+        // Nút LỌC
         btnSearch = new JButton("LỌC");
         btnSearch.setPreferredSize(new Dimension(80, 26));
         btnSearch.addActionListener(e -> applyAdvancedFilter());
-        buttonFilterPanel.add(btnSearch);
+        bottomPanel.add(btnSearch);
 
-        advancedSearchPanel.add(buttonFilterPanel);
-
-        bottomPanel.add(advancedSearchPanel, BorderLayout.EAST);
-
-        // Add everything to the main toolbar
+        // Thêm các panel vào toolbar
         toolbar.add(topPanel, BorderLayout.NORTH);
         toolbar.add(bottomPanel, BorderLayout.CENTER);
 
-        // === Sự kiện nút ===
+        // Thêm sự kiện cho các nút
         btnXoa.addActionListener(e -> deleteHoaDon());
         btnChiTiet.addActionListener(e -> openChiTietDialog());
         btnExcel.addActionListener(e -> JOptionPane.showMessageDialog(this, "Chức năng xuất Excel đang phát triển"));

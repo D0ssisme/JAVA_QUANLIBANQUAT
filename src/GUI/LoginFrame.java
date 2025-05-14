@@ -100,8 +100,6 @@ public class LoginFrame extends JFrame implements KeyListener {
         });
         pnlMain.add(pnlLogIn);
 
-        // Đã loại bỏ phần "Quên mật khẩu"
-
         add(pnlMain, BorderLayout.EAST);
     }
 

@@ -17,15 +17,16 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 
 public class KhachHangPanel extends JPanel {
 
-    private JButton btnThem, btnXoa, btnSua, btnLamMoi;
+    private JButton btnThem, btnXoa, btnSua, btnToggle;
     private JTextField txtSearch;
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField txtPriceFrom, txtPriceTo;
-    private JButton btnSearch;
+    private JButton btnSearch, btnLamMoi;
     private final TableRowSorter<DefaultTableModel> sorter;
     private KhachHangDAO khachHangDAO = new KhachHangDAO();
     private List<KhachHangDTO> listKH;
@@ -71,6 +72,15 @@ public class KhachHangPanel extends JPanel {
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         sorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(sorter);
+        
+        // Thiết lập và styling của table
+        table.setFont(new Font("Arial", Font.PLAIN, 14)); 
+        table.setRowHeight(30);
+        
+        JTableHeader header = table.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 14)); 
+        header.setPreferredSize(new Dimension(header.getPreferredSize().width, 50));
+        
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         // Load dữ liệu
@@ -135,117 +145,99 @@ public class KhachHangPanel extends JPanel {
 
     private JPanel createButtonPanel() {
         // Tạo một panel chứa toàn bộ toolbar
-        JPanel toolbar = new JPanel();
-        toolbar.setLayout(new BorderLayout(0, 5)); // Giảm khoảng cách dọc
+        JPanel toolbar = new JPanel(new BorderLayout());
         toolbar.setBackground(Color.WHITE);
-        toolbar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // Panel trên chứa các buttons và search cơ bản
-        JPanel topPanel = new JPanel(new BorderLayout(5, 0));
-        topPanel.setBackground(Color.WHITE);
+        // LEFT TOOL PANEL - Chứa các nút chức năng (Thêm, Xóa, Sửa, Trạng thái)
+        JPanel leftToolPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        leftToolPanel.setOpaque(false);
 
-        // Panel chứa các nút chức năng
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        buttonPanel.setBackground(Color.WHITE);
-
-        // Tạo các buttons với icons 
         ImageIcon iconThem = new ImageIcon(getClass().getResource("/icon/them.png"));
         btnThem = new JButton("THÊM", iconThem);
         btnThem.setHorizontalTextPosition(SwingConstants.CENTER);
         btnThem.setVerticalTextPosition(SwingConstants.BOTTOM);
-        buttonPanel.add(btnThem);
 
         ImageIcon iconXoa = new ImageIcon(getClass().getResource("/icon/xoa.png"));
         btnXoa = new JButton("XÓA", iconXoa);
         btnXoa.setHorizontalTextPosition(SwingConstants.CENTER);
         btnXoa.setVerticalTextPosition(SwingConstants.BOTTOM);
-        buttonPanel.add(btnXoa);
 
         ImageIcon iconSua = new ImageIcon(getClass().getResource("/icon/sua.png"));
         btnSua = new JButton("SỬA", iconSua);
         btnSua.setHorizontalTextPosition(SwingConstants.CENTER);
         btnSua.setVerticalTextPosition(SwingConstants.BOTTOM);
-        buttonPanel.add(btnSua);
 
         ImageIcon iconToggle = new ImageIcon(getClass().getResource("/icon/Toggle.png"));
-        JButton btnToggle = new JButton("TRẠNG THÁI", iconToggle);
+        btnToggle = new JButton("TRẠNG THÁI", iconToggle);
         btnToggle.setHorizontalTextPosition(SwingConstants.CENTER);
         btnToggle.setVerticalTextPosition(SwingConstants.BOTTOM);
-        buttonPanel.add(btnToggle);
 
-        topPanel.add(buttonPanel, BorderLayout.WEST);
+        leftToolPanel.add(btnThem);
+        leftToolPanel.add(btnXoa);
+        leftToolPanel.add(btnSua);
+        leftToolPanel.add(btnToggle);
 
-        // Panel chứa các thành phần tìm kiếm - Cải tiến
-        JPanel searchPanel = new JPanel();
-        searchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0));
-        searchPanel.setBackground(Color.WHITE);
+        JPanel leftWrapper = new JPanel();
+        leftWrapper.setLayout(new BoxLayout(leftWrapper, BoxLayout.Y_AXIS));
+        leftWrapper.setOpaque(false);
+        leftWrapper.add(Box.createVerticalGlue());
+        leftWrapper.add(leftToolPanel);
+        leftWrapper.add(Box.createVerticalGlue());
 
+        // RIGHT TOOL PANEL - Chứa tìm kiếm và lọc
+        JPanel rightToolPanel = new JPanel();
+        rightToolPanel.setLayout(new BoxLayout(rightToolPanel, BoxLayout.Y_AXIS));
+        rightToolPanel.setOpaque(false);
+        
+        JPanel filterPanel = new JPanel(new GridLayout(2, 1, 0, 5));
+        filterPanel.setOpaque(false);
+
+        // Hàng 1: Tìm kiếm
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        searchPanel.setOpaque(false);
+        
         JLabel lblSearch = new JLabel("Tìm kiếm:");
-        lblSearch.setPreferredSize(new Dimension(65, 25));
-
         txtSearch = new JTextField();
-        txtSearch.setPreferredSize(new Dimension(180, 25));
-
+        txtSearch.setPreferredSize(new Dimension(215, 25));
+        
         btnLamMoi = new JButton("LÀM MỚI");
-        btnLamMoi.setPreferredSize(new Dimension(100, 26));
-
+        
         searchPanel.add(lblSearch);
         searchPanel.add(txtSearch);
         searchPanel.add(btnLamMoi);
 
-        topPanel.add(searchPanel, BorderLayout.EAST);
-
-        JPanel bottomPanel = new JPanel(new BorderLayout(0, 0));
-        bottomPanel.setBackground(Color.WHITE);
-        bottomPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
-
-        // Panel bên trái (trống, để căn chỉnh)
-        JPanel leftPlaceholder = new JPanel();
-        leftPlaceholder.setBackground(Color.WHITE);
-        leftPlaceholder.setPreferredSize(buttonPanel.getPreferredSize());
-        bottomPanel.add(leftPlaceholder, BorderLayout.WEST);
-
-        // Panel tìm kiếm nâng cao - căn chỉnh giống phần search ở trên
-        JPanel advancedSearchPanel = new JPanel();
-        advancedSearchPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 0));
-        advancedSearchPanel.setBackground(Color.WHITE);
-
-        // Panel giá
-        JPanel pricePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        pricePanel.setBackground(Color.WHITE);
-
+        // Hàng 2: Lọc theo tổng tiền
+        JPanel priceFilterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        priceFilterPanel.setOpaque(false);
+        
         JLabel lblPriceFrom = new JLabel("Tổng tiền từ:");
-        lblPriceFrom.setPreferredSize(new Dimension(80, 25));
-        pricePanel.add(lblPriceFrom);
-
         txtPriceFrom = new JTextField(7);
-        pricePanel.add(txtPriceFrom);
-
+        
         JLabel lblPriceTo = new JLabel("đến:");
-        lblPriceTo.setPreferredSize(new Dimension(35, 25));
-        pricePanel.add(lblPriceTo);
-
         txtPriceTo = new JTextField(7);
-        pricePanel.add(txtPriceTo);
-
-        advancedSearchPanel.add(pricePanel);
-
-        // Panel nút lọc
-        JPanel buttonFilterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        buttonFilterPanel.setBackground(Color.WHITE);
-
+        
         btnSearch = new JButton("LỌC");
         btnSearch.setPreferredSize(new Dimension(80, 26));
-        btnSearch.addActionListener(e -> applyAdvancedFilter());
-        buttonFilterPanel.add(btnSearch);
+        
+        priceFilterPanel.add(lblPriceFrom);
+        priceFilterPanel.add(txtPriceFrom);
+        priceFilterPanel.add(lblPriceTo);
+        priceFilterPanel.add(txtPriceTo);
+        priceFilterPanel.add(btnSearch);
 
-        advancedSearchPanel.add(buttonFilterPanel);
+        filterPanel.add(searchPanel);
+        filterPanel.add(priceFilterPanel);
+        rightToolPanel.add(filterPanel);
 
-        bottomPanel.add(advancedSearchPanel, BorderLayout.EAST);
+        JPanel rightWrapper = new JPanel();
+        rightWrapper.setLayout(new BoxLayout(rightWrapper, BoxLayout.Y_AXIS));
+        rightWrapper.setOpaque(false);
+        rightWrapper.add(Box.createVerticalGlue());
+        rightWrapper.add(rightToolPanel);
+        rightWrapper.add(Box.createVerticalGlue());
 
-        // Add everything to the main toolbar
-        toolbar.add(topPanel, BorderLayout.NORTH);
-        toolbar.add(bottomPanel, BorderLayout.CENTER);
+        toolbar.add(leftWrapper, BorderLayout.WEST);
+        toolbar.add(rightWrapper, BorderLayout.EAST);
 
         // === Sự kiện nút ===
         btnThem.addActionListener(e -> {
@@ -321,6 +313,8 @@ public class KhachHangPanel extends JPanel {
 
             loadDataFromDB(); // Tải lại dữ liệu từ database
         });
+        
+        btnSearch.addActionListener(e -> applyAdvancedFilter());
 
         // === Tìm kiếm + lọc ===
         txtSearch.getDocument().addDocumentListener(new DocumentListener() {
@@ -359,6 +353,7 @@ public class KhachHangPanel extends JPanel {
             sorter.setRowFilter(RowFilter.andFilter(filters));
         }
     }
+    
     // Mở dialog thêm khách hàng
     public void openThemKhachHangDialog() {
         ThemKhachHangDialog dlg = new ThemKhachHangDialog();
@@ -367,6 +362,7 @@ public class KhachHangPanel extends JPanel {
             loadDataFromDB(); // Load lại dữ liệu sau khi thêm
         }
     }
+    
     private void loadDataFromDB() {
         listKH = KhachHangDAO.selectAll();
         tableModel.setRowCount(0);

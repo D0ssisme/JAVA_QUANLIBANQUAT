@@ -353,8 +353,8 @@ private void filterData(JTextField txtSearch, JComboBox<String> cbbFilter, JComb
 
     private void adjustTableColumnWidth() {
         int w = table.getWidth();
-        table.getColumnModel().getColumn(0).setPreferredWidth((int)(w * 0.07));
-        table.getColumnModel().getColumn(1).setPreferredWidth((int)(w * 0.25));
+        table.getColumnModel().getColumn(0).setPreferredWidth((int)(w * 0.08));
+        table.getColumnModel().getColumn(1).setPreferredWidth((int)(w * 0.20));
         table.getColumnModel().getColumn(2).setPreferredWidth((int)(w * 0.08));
 
         table.getColumnModel().getColumn(3).setPreferredWidth((int)(w * 0.08));
@@ -362,7 +362,7 @@ private void filterData(JTextField txtSearch, JComboBox<String> cbbFilter, JComb
         table.getColumnModel().getColumn(5).setPreferredWidth((int)(w * 0.10));
         table.getColumnModel().getColumn(6).setPreferredWidth((int)(w * 0.13));
         table.getColumnModel().getColumn(7).setPreferredWidth((int)(w * 0.13));
-        table.getColumnModel().getColumn(8).setPreferredWidth((int)(w * 0.08));
+        table.getColumnModel().getColumn(8).setPreferredWidth((int)(w * 0.10));
     }
 
     private void loadDataToTable(List<QuatDTO> list) {

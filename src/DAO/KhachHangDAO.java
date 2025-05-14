@@ -60,6 +60,19 @@ public class KhachHangDAO {
         return null;
     }
 
+    public boolean exists(String maKh) {
+        String sql = "SELECT 1 FROM khachhang WHERE MaKhachHang = ?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, maKh);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Thêm mới khách hàng
      */
@@ -104,7 +117,7 @@ public class KhachHangDAO {
     /**
      * Soft-delete khách hàng (chuyển trạng thái từ 1 → 0)
      */
-     public boolean delete(String maKh) {
+    public boolean delete(String maKh) {
         String sql = "DELETE FROM khachhang WHERE MaKhachHang = ?";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, maKh);

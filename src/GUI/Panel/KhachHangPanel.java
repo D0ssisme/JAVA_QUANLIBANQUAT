@@ -195,7 +195,6 @@ public class KhachHangPanel extends JPanel {
 
         topPanel.add(searchPanel, BorderLayout.EAST);
 
-        // Panel dưới chứa tìm kiếm nâng cao - Cải tiến
         JPanel bottomPanel = new JPanel(new BorderLayout(0, 0));
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
@@ -361,7 +360,6 @@ public class KhachHangPanel extends JPanel {
         }
     }
     // Mở dialog thêm khách hàng
-
     public void openThemKhachHangDialog() {
         ThemKhachHangDialog dlg = new ThemKhachHangDialog();
         dlg.setVisible(true);
@@ -369,7 +367,6 @@ public class KhachHangPanel extends JPanel {
             loadDataFromDB(); // Load lại dữ liệu sau khi thêm
         }
     }
-
     private void loadDataFromDB() {
         listKH = KhachHangDAO.selectAll();
         tableModel.setRowCount(0);

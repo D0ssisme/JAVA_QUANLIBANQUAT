@@ -206,9 +206,6 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
         btnThanhToan = new JButton("Thanh toán");
         btnThanhToan.addActionListener(this);
         south.add(btnThanhToan);
-        btnXuatPDF = new JButton("Xuất PDF");
-        btnXuatPDF.addActionListener(this);
-        south.add(btnXuatPDF);
         btnHuy = new JButton("Xóa");
         btnHuy.addActionListener(this);
         south.add(btnHuy);
@@ -260,8 +257,6 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
             showError(ex);
         }
     }
-
-// Custom class to hold quạt information for the combobox
     private static class QuatComboItem {
 
         private String maQuat;
@@ -314,7 +309,6 @@ public class BanQuatPanel extends JPanel implements ActionListener, Serializable
                     setToolTipText(null);
                 }
             }
-
             return c;
         }
     }

@@ -104,8 +104,8 @@ public class KhachHangDAO {
     /**
      * Soft-delete khách hàng (chuyển trạng thái từ 1 → 0)
      */
-    public boolean delete(String maKh) {
-        String sql = "UPDATE khachhang SET TrangThai = 0 WHERE MaKhachHang = ?";
+     public boolean delete(String maKh) {
+        String sql = "DELETE FROM khachhang WHERE MaKhachHang = ?";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, maKh);
             return ps.executeUpdate() > 0;
